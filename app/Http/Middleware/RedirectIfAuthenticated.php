@@ -17,14 +17,21 @@ class RedirectIfAuthenticated
      */
     public function handle(Request $request, Closure $next, string ...$guards): Response
     {
-        $guards = empty($guards) ? [null] : $guards;
-
+        // Cek apakah pengguna sudah login untuk semua guard yang diberikan
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                return redirect(RouteServiceProvider::HOME);
+                // Pengguna sudah login, arahkan ke dashboard sesuai role
+                if (Auth::user()->role === 'admin') {
+                    return redirect()->route('dashboard.admin');
+                } elseif (Auth::user()->role === 'student') {
+                    return redirect()->route('dashboard.student');
+                } elseif (Auth::user()->role === 'teacher') {
+                    return redirect()->route('dashboard.teacher');
+                }
             }
         }
 
+        // Jika belum login, lanjutkan permintaan ke route berikutnya (misalnya login atau register)
         return $next($request);
     }
 }
