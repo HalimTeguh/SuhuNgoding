@@ -50,7 +50,7 @@ class LoginController extends Controller
         }
 
         // return back()->withErrors(['email' => 'Email atau password salah.'])->withInput();
-        return back()->withErrors(['email-username' => 'Email atau password salah.'])->withInput()->with('toasts', [
+        return back()->withErrors(['email' => 'Email atau password salah.'])->withInput()->with('toasts', [
             [
                 'type' => 'danger',  // Jenis toast
                 'title' => 'Login Gagal',  // Judul toast

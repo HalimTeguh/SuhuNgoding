@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Authentication\LoginController;
 use App\Http\Controllers\Authentication\RegisterController;
+use App\Http\Controllers\Dashboard\AdminController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\ExceptionPageController;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +39,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware('role:admin')->group(function () {
         Route::get('/dashboard/admin', [DashboardController::class, 'admin'])->name('dashboard.admin');
+        Route::resource('/dashboard/admin/users/admin', AdminController::class);
     });
 
     // Route::middleware('role:teacher')->group(function () {
@@ -47,6 +49,7 @@ Route::middleware(['auth'])->group(function () {
     // Route::middleware('role:student')->group(function () {
     //     Route::get('/dashboard/student', [DashboardController::class, 'student'])->name('dashboard.student');
     // });
+    
 });
 
 Route::get('/maintenance', [ExceptionPageController::class, 'maintenance'])->name('maintenance');

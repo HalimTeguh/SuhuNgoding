@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 
-class StudentController extends Controller
+class TeacherController extends Controller
 {
+
     public function __construct()
     {
         $this->middleware('auth'); // Pastikan hanya user login yang bisa mengakses controller ini
