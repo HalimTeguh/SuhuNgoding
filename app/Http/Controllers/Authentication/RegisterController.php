@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Authentication;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\TeacherController;
 use App\Models\Admin;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Str;
 
 class RegisterController extends Controller
 {

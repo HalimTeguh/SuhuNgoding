@@ -3,15 +3,16 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\Student;
+use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
-class StudentController extends Controller
+class TeacherController extends Controller
 {
+
     public function __construct()
     {
         $this->middleware('auth'); // Pastikan hanya user login yang bisa mengakses controller ini
@@ -23,14 +24,15 @@ class StudentController extends Controller
     public function index()
     {
         //
-        $students = User::where('role', 'student')
+        $teachers = User::where('role', 'teacher')
             ->whereNull('deleted_at')
             ->get();
 
-        return view('admin.users.student', [
-            'students' => $students,
-            'activeMenu' => 'student'
+        return view('admin.users.teacher', [
+            'teachers' => $teachers,
+            'activeMenu' => 'teacher'
         ]);
+        
     }
 
     /**
@@ -39,7 +41,6 @@ class StudentController extends Controller
     public function create()
     {
         //
-
     }
 
     /**
@@ -54,7 +55,7 @@ class StudentController extends Controller
             $request->validate([
                 'nameCreate' => 'required|string|max:255',
                 'emailCreate' => 'required|email|unique:users,email',
-                'NISCreate' => 'required|unique:students,NIS',
+                'NIPCreate' => 'required|unique:teachers,NIP',
                 'institutionCreate' => 'nullable',
                 'addressCreate' => 'nullable',
                 'passwordCreate' => 'required|min:6',
@@ -64,14 +65,14 @@ class StudentController extends Controller
             $user = User::create([
                 'name' => $request->nameCreate,
                 'email' => $request->emailCreate,
-                'role' => 'student',
+                'role' => 'teacher',
                 'password' => Hash::make($request->passwordCreate),
             ]);
 
             // Buat Teacher, jika gagal maka User juga dibatalkan
-            Student::create([
+            Teacher::create([
                 'user_id' => $user->id,
-                'NIS' => $request->NISCreate,
+                'NIP' => $request->NIPCreate,
                 'institution' => $request->institutionCreate,
                 'address' => $request->addressCreate,
             ]);
@@ -82,7 +83,7 @@ class StudentController extends Controller
                 [
                     'type' => 'success',
                     'title' => 'Berhasil',
-                    'message' => "Siswa $request->name berhasil ditambahkan",
+                    'message' => "Pengajar $request->name berhasil ditambahkan",
                     'time' => now()->diffForHumans()
                 ]
             ]);
@@ -132,10 +133,10 @@ class StudentController extends Controller
     public function edit(string $id)
     {
         //
-        $student = User::leftJoin('students', 'users.id', '=', 'students.user_id')
+        $teacher = User::leftJoin('teachers', 'users.id', '=', 'teachers.user_id')
             ->where('users.id', $id)
             ->first();
-        return response()->json($student);
+        return response()->json($teacher);
     }
 
     /**
@@ -143,9 +144,8 @@ class StudentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
         try {
-            $student = User::findOrFail($id);
+            $teacher = User::findOrFail($id);
 
             // Validasi input
             $validatedData = $request->validate([
@@ -155,44 +155,44 @@ class StudentController extends Controller
                     'email',
                     Rule::unique('users', 'email')->ignore($id),
                 ],
-                'NISEdit' => [
+                'NIPEdit' => [
                     'required',
-                    Rule::unique('students', 'NIS')->ignore($student->student->id),
+                    Rule::unique('teachers', 'NIP')->ignore($teacher->teacher->id),
                 ],
                 'institutionEdit' => 'nullable|string',
                 'addressEdit' => 'nullable|string',
                 'passwordEdit' => 'nullable|min:6',
             ]);
 
-            // Perbarui data student
-            $student->fill([
+            // Perbarui data teacher
+            $teacher->fill([
                 'name' => $validatedData['nameEdit'],
-                'email' => $student->email !== $validatedData['emailEdit'] ? $validatedData['emailEdit'] : $student->email,
-                'password' => $request->filled('passwordEdit') ? HASH::make($validatedData['passwordEdit']) : $student->password,
+                'email' => $teacher->email !== $validatedData['emailEdit'] ? $validatedData['emailEdit'] : $teacher->email,
+                'password' => $request->filled('passwordEdit') ? HASH::make($validatedData['passwordEdit']) : $teacher->password,
             ]);
 
             // Perbarui data relasi teacher
-            $student->student->update([
-                'NIS' => $validatedData['NISEdit'],
+            $teacher->teacher->update([
+                'NIP' => $validatedData['NIPEdit'],
                 'institution' => $validatedData['institutionEdit'],
                 'address' => $validatedData['addressEdit'],
             ]);
 
             // Simpan semua perubahan
-            $student->save();
+            $teacher->save();
 
             return redirect()->back()->with('toasts', [
                 [
                     'type' => 'success',
                     'title' => 'Berhasil',
-                    'message' => 'Data siswa berhasil diperbarui.',
+                    'message' => 'Data pengajar berhasil diperbarui.',
                     'time' => now()->diffForHumans(),
                 ]
             ]);
         } catch (\Exception $e) {
             $message = $e instanceof \Illuminate\Validation\ValidationException
                 ? 'Terjadi kesalahan saat validasi data.'
-                : 'Gagal Mengubah data siswa. Terjadi kesalahan: ' . $e->getMessage();
+                : 'Gagal Mengubah data pengajar. Terjadi kesalahan: ' . $e->getMessage();
 
             $errors = $e instanceof \Illuminate\Validation\ValidationException ? $e->errors() : ['general' => $e->getMessage()];
 
@@ -214,35 +214,36 @@ class StudentController extends Controller
         }
     }
 
+
     /**
      * Remove the specified resource from storage.
      */
     public function softDelete($id)
     {
         try {
-            // Cari student berdasarkan ID
-            $student = User::findOrFail($id);
+            // Cari teacher berdasarkan ID
+            $teacher = User::findOrFail($id);
 
-            if (!$student) {
+            if (!$teacher) {
                 return redirect()->back()->with('toasts', [
                     [
                         'type' => 'danger',
                         'title' => 'Gagal',
-                        'message' => 'Data siswa tidak ditemukan!',
+                        'message' => 'Data pengajar tidak ditemukan!',
                         'time' => now()->diffForHumans(),
                     ]
                 ]);
             }
 
             // Perbarui deleted_at dengan timestamp saat ini
-            $student->deleted_at = now();
-            $student->save();
+            $teacher->deleted_at = now();
+            $teacher->save();
 
             return redirect()->back()->with('toasts', [
                 [
                     'type' => 'success',
                     'title' => 'Berhasil',
-                    'message' => 'Data siswa telah dihapus.',
+                    'message' => 'Data pengajar telah dihapus.',
                     'time' => now()->diffForHumans(),
                 ]
             ]);
@@ -264,17 +265,17 @@ class StudentController extends Controller
     public function destroy(string $id, Request $request)
     {
         try {
-            // Cari student berdasarkan ID
-            $student = User::findOrFail($id);
+            // Cari teacher berdasarkan ID
+            $teacher = User::findOrFail($id);
 
             // Hapus secara permanen
-            $student->forceDelete();
+            $teacher->forceDelete();
 
             return redirect()->back()->with('toasts', [
                 [
                     'type' => 'success',
                     'title' => 'Berhasil',
-                    'message' => 'Siswa berhasil dihapus secara permanen.',
+                    'message' => 'Pengajar berhasil dihapus secara permanen.',
                     'time' => now()->diffForHumans(),
                 ]
             ]);

@@ -16,7 +16,9 @@ class DashboardController extends Controller
 
     public function admin()
     {
-        return view('admin.dashboard.index');
+        return view('admin.dashboard.index', [
+            'activeMenu' => 'dashboard'
+        ]);
     }
 
     public function teacher()
