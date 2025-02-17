@@ -22,6 +22,7 @@ class User extends Authenticatable
         'email',
         'role',
         'password',
+        'delete_at'
     ];
 
     /**
@@ -44,7 +45,7 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function siswa()
+    public function student()
     {
         return $this->hasOne(Student::class, 'user_id');
     }

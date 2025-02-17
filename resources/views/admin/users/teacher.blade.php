@@ -11,15 +11,15 @@
         <div class="card">
             <div class="w-100">
                 <div class="d-flex justify-content-between align-items-center p-3 bg-white shadow-sm rounded">
-                    <h5 id="entityHeader" class="m-0">Admin</h5>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAdmin">
-                        + Add New Admin
+                    <h5 id="entityHeader" class="m-0">Teacher</h5>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTeacher">
+                        + Add New Teacher
                     </button>
 
                 </div>
             </div>
             <div class="table-responsive">
-                <table id="adminTable" class="table table-striped">
+                <table id="teacherTable" class="table table-striped">
                     <thead class="table-dark">
                         <tr>
                             <th>No</th>
@@ -29,11 +29,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($admins as $key => $admin)
+                        @foreach ($teachers as $key => $teacher)
                         <tr>
                             <td>{{ $key + 1 }}</td>
-                            <td>{{ $admin->name }}</td>
-                            <td>{{ $admin->email }}</td>
+                            <td>{{ $teacher->name }}</td>
+                            <td>{{ $teacher->email }}</td>
                             <td>
                                 <div class="dropdown">
                                     <button type="button" class="btn btn-light p-2 " data-bs-toggle="dropdown">
@@ -41,16 +41,16 @@
                                     </button>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a class="dropdown-item edit-admin-btn" href="javascript:void(0);"
-                                                data-bs-toggle="offcanvas" data-bs-target="#editAdmin"
-                                                data-id="{{ $admin->id }}" aria-controls="offcanvasEnd">
+                                            <a class="dropdown-item edit-teacher-btn" href="javascript:void(0);"
+                                                data-bs-toggle="offcanvas" data-bs-target="#editTeacher"
+                                                data-id="{{ $teacher->id }}" aria-controls="offcanvasEnd">
                                                 <i class="bx bx-edit-alt me-1"></i> Edit
                                             </a>
                                         </li>
                                         <li>
                                             <a class="dropdown-item text-danger" href="javascript:void(0);"
-                                                data-bs-toggle="modal" data-bs-target="#deleteAdmin"
-                                                data-id="{{ $admin->id }}" data-name="{{ $admin->name }}">
+                                                data-bs-toggle="modal" data-bs-target="#deleteTeacher"
+                                                data-id="{{ $teacher->id }}" data-name="{{ $teacher->name }}">
                                                 <i class="bx bx-trash me-1"></i> Delete
                                             </a>
                                         </li>
@@ -75,9 +75,9 @@
 
 <!-- Content wrapper -->
 
-@include('admin.users.modal.createAdminModal')
-@include('admin.users.modal.deleteAdminModal')
-@include('admin.users.modal.editAdminCanvas')
+@include('admin.users.modal.createTeacherModal')
+@include('admin.users.modal.deleteTeacherModal')
+@include('admin.users.modal.editTeacherCanvas')
 
 
 

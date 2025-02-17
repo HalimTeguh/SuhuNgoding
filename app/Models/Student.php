@@ -22,4 +22,9 @@ class Student extends User
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function classes()
+    {
+        return $this->belongsToMany(Classes::class, 'class_student');
+    }
 }
