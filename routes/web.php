@@ -3,8 +3,13 @@
 use App\Http\Controllers\Authentication\LoginController;
 use App\Http\Controllers\Authentication\RegisterController;
 use App\Http\Controllers\Dashboard\AdminController;
+use App\Http\Controllers\Dashboard\ClassController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Dashboard\StudentController;
+use App\Http\Controllers\Dashboard\TeacherController;
 use App\Http\Controllers\ExceptionPageController;
+use App\Models\Admin;
+use App\Models\Classes;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,7 +44,17 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware('role:admin')->group(function () {
         Route::get('/dashboard/admin', [DashboardController::class, 'admin'])->name('dashboard.admin');
+
         Route::resource('/dashboard/admin/users/admin', AdminController::class);
+        Route::put('/dashboard/admin/users/admin/s/{admin}', [AdminController::class, 'softDelete'])->name('dashboard.admin.softDelete');
+        
+        Route::resource('/dashboard/admin/users/teacher', TeacherController::class);
+        Route::put('/dashboard/admin/users/teacher/s/{teacher}', [TeacherController::class, 'softDelete'])->name('dashboard.teacher.softDelete');
+
+        Route::resource('/dashboard/admin/users/student', StudentController::class);
+        Route::put('/dashboard/admin/users/student/s/{student}', [StudentController::class, 'softDelete'])->name('dashboard.student.softDelete');
+
+        Route::resource('/dashboard/admin/pembelajaran/class', ClassController::class);
     });
 
     // Route::middleware('role:teacher')->group(function () {

@@ -11,29 +11,31 @@
         <div class="card">
             <div class="w-100">
                 <div class="d-flex justify-content-between align-items-center p-3 bg-white shadow-sm rounded">
-                    <h5 id="entityHeader" class="m-0">Admin</h5>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAdmin">
-                        + Add New Admin
+                    <h5 id="entityHeader" class="m-0">Class</h5>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createClass">
+                        + Add New Class
                     </button>
 
                 </div>
             </div>
             <div class="table-responsive">
-                <table id="adminTable" class="table table-striped">
+                <table id="classTable" class="table table-striped">
                     <thead class="table-dark">
                         <tr>
                             <th>No</th>
                             <th>Name</th>
-                            <th>Email</th>
+                            <th>Teacher</th>
+                            <th>description</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($admins as $key => $admin)
+                        @foreach ($classes as $key => $class)
                         <tr>
                             <td>{{ $key + 1 }}</td>
-                            <td>{{ $admin->name }}</td>
-                            <td>{{ $admin->email }}</td>
+                            <td>{{ $class->name }}</td>
+                            <td>{{ $class->teacher->name }}</td>
+                            <td>{{ $class->description }}</td>
                             <td>
                                 <div class="dropdown">
                                     <button type="button" class="btn btn-light p-2 " data-bs-toggle="dropdown">
@@ -41,16 +43,16 @@
                                     </button>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a class="dropdown-item edit-admin-btn" href="javascript:void(0);"
-                                                data-bs-toggle="offcanvas" data-bs-target="#editAdmin"
-                                                data-id="{{ $admin->id }}" aria-controls="offcanvasEnd">
+                                            <a class="dropdown-item edit-class-btn" href="javascript:void(0);"
+                                                data-bs-toggle="offcanvas" data-bs-target="#editClass"
+                                                data-id="{{ $class->id }}" aria-controls="offcanvasEnd">
                                                 <i class="bx bx-edit-alt me-1"></i> Edit
                                             </a>
                                         </li>
                                         <li>
                                             <a class="dropdown-item text-danger" href="javascript:void(0);"
-                                                data-bs-toggle="modal" data-bs-target="#deleteAdmin"
-                                                data-id="{{ $admin->id }}" data-name="{{ $admin->name }}">
+                                                data-bs-toggle="modal" data-bs-target="#deleteClass"
+                                                data-id="{{ $class->id }}" data-name="{{ $class->name }}">
                                                 <i class="bx bx-trash me-1"></i> Delete
                                             </a>
                                         </li>
@@ -75,9 +77,10 @@
 
 <!-- Content wrapper -->
 
-@include('admin.users.modal.createAdminModal')
-@include('admin.users.modal.deleteAdminModal')
-@include('admin.users.modal.editAdminCanvas')
+@include('admin.pembelajaran.partials.createClassesModal')
+@include('admin.pembelajaran.partials.inviteStudentModal')
+{{-- @include('admin.users.modal.deleteStudentModal') --}}
+{{-- @include('admin.users.modal.editStudentCanvas') --}}
 
 
 
