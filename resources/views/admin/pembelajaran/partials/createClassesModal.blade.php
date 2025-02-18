@@ -122,7 +122,7 @@
                             </div>
 
                             <!-- Student Container -->
-                            <div class="student-container p-3 border rounded">
+                            <div id="studentContainer" class="student-container p-3 border rounded">
                                 <!-- Row: Search and Add Student -->
                                 <div class="d-flex justify-content-between mb-3">
                                     <input type="text" class="form-control flex-grow-1" id="searchStudent"
@@ -131,56 +131,52 @@
                                         data-bs-toggle="modal" data-bs-target="#addStudentModal">Invite Student</button>
                                 </div>
 
-                                
+
                                 <!-- Dynamic Student List (10 duplicated cards) -->
                                 <div id="studentList" class="student-list">
-                                    @for ($i = 0; $i < 10; $i++) <div
-                                        class="student-card d-flex align-items-center justify-content-between px-5 py-3 mb-1 border rounded">
-                                        <div>
-                                            <strong>Student Name {{ $i + 1 }}</strong><br>
-                                            212233445{{ $i }} - student{{ $i + 1 }}@mail.com
-                                        </div>
-                                        <button type="button" class="btn btn-sm btn-outline-danger">X</button>
+
+
+
                                 </div>
-                                @endfor
+                            </div>
+
+                            <!-- Navigation Buttons -->
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-secondary"
+                                    onclick="stepperForm.previous()">Previous</button>
+                                <button type="button" class="btn btn-primary" onclick="stepperForm.next()">Next</button>
                             </div>
                         </div>
 
-                        <!-- Navigation Buttons -->
-                        <div class="d-flex justify-content-between mt-4">
+
+                        <!-- Step 3 -->
+                        <div id="step-3" class="content" role="tabpanel" aria-labelledby="step-3-trigger">
+                            <div class="mb-3">
+                                <label for="descriptionCreate" class="form-label">Description</label>
+                                <input type="text" id="descriptionCreate" name="descriptionCreate"
+                                    class="form-control @error('descriptionCreate') is-invalid @enderror"
+                                    placeholder="Description" value="{{ old('descriptionCreate') }}" />
+                                @error('descriptionCreate')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                             <button type="button" class="btn btn-secondary"
                                 onclick="stepperForm.previous()">Previous</button>
-                            <button type="button" class="btn btn-primary" onclick="stepperForm.next()">Next</button>
+                            <button type="submit" class="btn btn-primary">Submit</button>
                         </div>
-                    </div>
-
-
-                    <!-- Step 3 -->
-                    <div id="step-3" class="content" role="tabpanel" aria-labelledby="step-3-trigger">
-                        <div class="mb-3">
-                            <label for="descriptionCreate" class="form-label">Description</label>
-                            <input type="text" id="descriptionCreate" name="descriptionCreate"
-                                class="form-control @error('descriptionCreate') is-invalid @enderror"
-                                placeholder="Description" value="{{ old('descriptionCreate') }}" />
-                            @error('descriptionCreate')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <button type="button" class="btn btn-secondary"
-                            onclick="stepperForm.previous()">Previous</button>
-                        <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-</div>
 
 
 
 
 <script>
+    let selectedStudents = [];
+
     document.addEventListener('DOMContentLoaded', function () {
         // Inisialisasi stepper
         window.stepperForm = new Stepper(document.querySelector('#stepperForm'));
@@ -206,60 +202,85 @@
         }
     }
 
-    let selectedStudents = [];
 
-    
-    // Function to simulate adding student to the list
-    function addSelectedStudent() {
-        const studentName = "Sample Student"; // Replace this with actual search result selection
-        const studentEmail = "sample@student.com";
+    function renderStudentList() {
+        const studentListContainer = document.getElementById("studentContainer");
+        studentListContainer.innerHTML = ""; // Kosongkan container sebelum render ulang
 
-        // Check if student is already in the list
-        if (selectedStudents.some(student => student.email === studentEmail)) {
-            alert("Student is already in the list!");
-            return;
-        }
-
-        // Add student to selectedStudents array
-        selectedStudents.push({ name: studentName, email: studentEmail });
-
-        // Add student card to the student list
-        const studentList = document.getElementById("studentList");
-        const studentCard = `
-            <div class="student-card d-flex align-items-center justify-content-between px-5 py-3 mb-1 border rounded">
-                <div>
-                    <strong>${studentName}</strong><br>
-                    ${studentEmail}
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeStudent('${studentEmail}')">X</button>
-            </div>
-        `;
-        studentList.innerHTML += studentCard;
-
-        // Close the modal
-        const addStudentModal = bootstrap.Modal.getInstance(document.getElementById("addStudentModal"));
-        addStudentModal.hide();
-    }
-
-    // Function to remove student from the list
-    function removeStudent(email) {
-        // Remove student from the array
-        selectedStudents = selectedStudents.filter(student => student.email !== email);
-
-        // Update the UI
-        const studentList = document.getElementById("studentList");
-        studentList.innerHTML = '';
-        selectedStudents.forEach(student => {
-            studentList.innerHTML += `
-                <div class="student-card d-flex align-items-center justify-content-between px-5 py-3 mb-1 border rounded">
-                    <div>
-                        <strong>${student.name}</strong><br>
-                        ${student.email}
+        if (selectedStudents.length === 0) {
+            studentListContainer.innerHTML = `
+                <div class="position-relative p-4 border rounded" style="height: 100%;">
+                    <!-- Dropdown import -->
+                    <div class="dropdown position-absolute" style="top: 10px; right: 10px;">
+                        <button type="button" class="btn btn-light p-2" data-bs-toggle="dropdown">
+                            <i class="bx bx-dots-vertical-rounded"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Import from CSV</a></li>
+                            <li><a class="dropdown-item" href="#">Import from Excel</a></li>
+                        </ul>
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeStudent('${student.email}')">X</button>
+                    <div class="d-flex flex-column align-items-center justify-content-center" style="height: 100%;">
+                        <i class="fa-solid fa-users fa-3x mb-3 text-muted"></i>
+                        <span class="text-muted">You haven't invited any students yet</span>
+                        <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addStudentModal">Invite Student</button>
+                    </div>
                 </div>
             `;
-        });
+        } else {
+            studentListContainer.innerHTML = `
+                <div class="d-flex justify-content-between mb-3">
+                    <input type="text" class="form-control flex-grow-1" id="searchStudent"
+                        placeholder="Search student">
+                    <button type="button" class="btn btn-primary ms-2 py-3" style="white-space: nowrap;"
+                        data-bs-toggle="modal" data-bs-target="#addStudentModal">Invite Student</button>
+                </div>
+                <div id="studentList" class="student-list"></div>
+            `;
+
+            // Tambahkan mahasiswa ke #studentList
+            const studentListElement = document.getElementById("studentList");
+            selectedStudents.forEach(student => {
+                const studentCard = document.createElement("div");
+                studentCard.className = "student-card d-flex align-items-center justify-content-between px-5 py-3 mb-1 border rounded";
+
+                studentCard.innerHTML = `
+                    <div>
+                        <strong>${student.name}</strong><br>
+                        ${student.nis} - ${student.email}
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeStudent('${student.id}')">X</button>
+                `;
+
+                studentListElement.appendChild(studentCard); // Tambahkan ke elemen #studentList
+            });
+        }
     }
+
+
+
+    // Fungsi untuk menghapus student dari selectedStudents berdasarkan ID
+    function removeStudent(id) {
+        selectedStudents = selectedStudents.filter(student => student.id !== id);
+        renderStudentList(); // Render ulang daftar student setelah penghapusan
+    }
+
+    // Panggil fungsi untuk menampilkan data awal
+    renderStudentList();
+
+
+    // Fungsi contoh untuk membuka modal create class
+    function openCreateClassModal() {
+                // Ambil elemen modal
+        const modalElement = document.getElementById("createClass");
+
+        // Buat instance modal menggunakan Bootstrap Modal API
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+
+        modalInstance.show();
+
+        console.log("Modal Create Class opened");
+    }
+
     
 </script>
