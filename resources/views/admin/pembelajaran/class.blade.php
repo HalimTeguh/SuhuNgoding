@@ -12,6 +12,7 @@
             <div class="w-100">
                 <div class="d-flex justify-content-between align-items-center p-3 bg-white shadow-sm rounded">
                     <h5 id="entityHeader" class="m-0">Class</h5>
+                    {{-- @livewire('create-class-modal') --}}
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createClass">
                         + Add New Class
                     </button>
