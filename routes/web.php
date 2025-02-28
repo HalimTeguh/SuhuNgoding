@@ -53,8 +53,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::resource('/dashboard/admin/users/student', StudentController::class);
         Route::put('/dashboard/admin/users/student/s/{student}', [StudentController::class, 'softDelete'])->name('dashboard.student.softDelete');
-
+        
         Route::resource('/dashboard/admin/pembelajaran/class', ClassController::class);
+        Route::put('/dashboard/admin/users/student/s/{student}', [ClassController::class, 'softDelete'])->name('dashboard.student.softDelete');
     });
 
     // Route::middleware('role:teacher')->group(function () {

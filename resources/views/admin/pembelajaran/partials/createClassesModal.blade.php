@@ -162,12 +162,11 @@
                             <div id="step-3" class="content" role="tabpanel" aria-labelledby="step-3-trigger">
                                 <div class="row">
                                     <!-- Kolom 1: Preview Kelas -->
-                                    <div class="col-md-4 vertical-divider">
+                                    <div class="col-md-4 vertical-divider confirmation">
                                         <div id="imagePreviewConfirmation" class="image-preview-container">
                                             <i id="defaultIconConfirmation"
                                                 class="fa-regular fa-image default-preview-icon"></i>
-                                            <img id="imagePreviewConfirmationImg" src="#" alt="Preview"
-                                                style="display: none;" />
+                                            <img id="imagePreviewConfirmationImg" src="#" alt="Preview"/>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Class Name</label>
