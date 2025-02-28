@@ -99,22 +99,22 @@
     <li class="menu-item {{ $activeMenu === 'module' || $activeMenu === 'class' || $activeMenu === 'gamification'  ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-dock-top"></i>
-        <div class="text-truncate" data-i18n="Users">Pembelajaran</div>
+        <div class="text-truncate" data-i18n="Users">Learning</div>
       </a>
       <ul class="menu-sub">
         <li class="menu-item {{ $activeMenu === 'moduel' ? 'active' : '' }}">
           <a href="/dashboard/admin/pembelajaran/module" class="menu-link">
-            <div class="text-truncate" data-i18n="module">Modul</div>
+            <div class="text-truncate" data-i18n="module">Module</div>
           </a>
         </li>
         <li class="menu-item {{ $activeMenu === 'classes' ? 'active' : '' }}">
           <a href="/dashboard/admin/pembelajaran/class" class="menu-link">
-            <div class="text-truncate" data-i18n="classes">Kelas</div>
+            <div class="text-truncate" data-i18n="classes">Class</div>
           </a>
         </li>
         <li class="menu-item {{ $activeMenu === 'gamification' ? 'active' : '' }}">
           <a href="/dashboard/admin/pembelajaran/gamification" class="menu-link">
-            <div class="text-truncate" data-i18n="gamification">Gamifikasi</div>
+            <div class="text-truncate" data-i18n="gamification">Gamification</div>
           </a>
         </li>
       </ul>
