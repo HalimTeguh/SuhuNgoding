@@ -5,6 +5,7 @@ use App\Http\Controllers\Authentication\RegisterController;
 use App\Http\Controllers\Dashboard\AdminController;
 use App\Http\Controllers\Dashboard\ClassController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Dashboard\ModuleController;
 use App\Http\Controllers\Dashboard\StudentController;
 use App\Http\Controllers\Dashboard\TeacherController;
 use App\Http\Controllers\ExceptionPageController;
@@ -55,7 +56,11 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/dashboard/admin/users/student/s/{student}', [StudentController::class, 'softDelete'])->name('dashboard.student.softDelete');
         
         Route::resource('/dashboard/admin/pembelajaran/class', ClassController::class);
-        Route::put('/dashboard/admin/users/student/s/{student}', [ClassController::class, 'softDelete'])->name('dashboard.student.softDelete');
+        Route::put('/dashboard/admin/pembelajaran/class/s/{class}', [ClassController::class, 'softDelete'])->name('dashboard.class.softDelete');
+
+        Route::resource('/dashboard/admin/pembelajaran/module', ModuleController::class);
+        Route::put('/dashboard/admin/pembelajaran/module/{module}/uploadImage', [ModuleController::class, 'uploadImage'])->name('dashboard.module.uploadImage');
+        Route::put('/dashboard/admin/pembelajaran/module/{module}/resetImage', [ModuleController::class, 'resetImage'])->name('dashboard.module.resetImage');
     });
 
     // Route::middleware('role:teacher')->group(function () {

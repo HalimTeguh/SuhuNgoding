@@ -102,7 +102,7 @@
         <div class="text-truncate" data-i18n="Users">Learning</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item {{ $activeMenu === 'moduel' ? 'active' : '' }}">
+        <li class="menu-item {{ $activeMenu === 'module' ? 'active' : '' }}">
           <a href="/dashboard/admin/pembelajaran/module" class="menu-link">
             <div class="text-truncate" data-i18n="module">Module</div>
           </a>

@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('module', function (Blueprint $table) {
+        Schema::create('module_contents', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('module_id')->constrained('modules')->onDelete('cascade');
             $table->string('title');
-            $table->string('image')->nullable();
-            $table->string('description')->nullable();
+            $table->string('content')->nullable();
+            $table->string('summary')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('module');
+        Schema::dropIfExists('module_contents');
     }
 };

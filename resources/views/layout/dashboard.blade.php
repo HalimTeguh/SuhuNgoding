@@ -24,19 +24,19 @@
 
   <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/boxicons.css') }}" />
 
-  
+
   <!-- Core CSS -->
   <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" class="template-customizer-core-css" />
   <link rel="stylesheet" href="{{ asset('assets/vendor/css/theme-default.css') }}"
-  class="template-customizer-theme-css" />
+    class="template-customizer-theme-css" />
   <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
-  
+
   <!-- Vendors CSS -->
   <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
   <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-  
+
 
   <!-- Page CSS -->
 
@@ -52,6 +52,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bs-stepper/dist/css/bs-stepper.min.css">
   <script src="https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js"></script>
 
+  <script src="https://cdn.tiny.cloud/1/014ttxkbq020o9a1tzsls6f6ft0oeyxp3ezqji7a43v06i81/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
 
 
 </head>
@@ -135,7 +136,7 @@
   <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
   <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
   <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
-  
+
 
   <!-- endbuild -->
 
