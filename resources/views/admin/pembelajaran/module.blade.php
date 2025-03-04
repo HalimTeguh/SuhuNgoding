@@ -98,8 +98,8 @@
             <div class="w-100">
                 <div class="d-flex justify-content-between align-items-center p-3 bg-white shadow-sm rounded">
                     <h5 id="entityHeader" class="m-0">Module</h5>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createClass">
-                        + Add New Class
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModule">
+                        + Add New Module
                     </button>
 
                 </div>
@@ -116,12 +116,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($classes as $key => $class)
+                        @foreach ($modules as $key => $module)
                         <tr>
                             <td>{{ $key + 1 }}</td>
-                            <td>{{ $class->name }}</td>
-                            <td>{{ $class->teacher->user->name }}</td>
-                            <td>{{ $class->description }}</td>
+                            <td>{{ $module->name }}</td>
+                            <td>{{ $module->teacher->user->name }}</td>
+                            <td>{{ $module->description }}</td>
                             <td>
                                 <div class="dropdown">
                                     <button type="button" class="btn btn-light p-2 " data-bs-toggle="dropdown">
@@ -130,14 +130,14 @@
                                     <ul class="dropdown-menu">
                                         <li>
                                             <a class="dropdown-item view-class-btn"
-                                                href="/dashboard/admin/pembelajaran/class/{{ $class->id }}">
+                                                href="/dashboard/admin/pembelajaran/module/{{ $module->id }}">
                                                 <i class="bx bx-show me-1"></i> view
                                             </a>
                                         </li>
                                         <li>
                                             <a class="dropdown-item text-danger" href="javascript:void(0);"
                                                 data-bs-toggle="modal" data-bs-target="#deleteClass"
-                                                data-id="{{ $class->id }}" data-name="{{ $class->name }}">
+                                                data-id="{{ $module->id }}" data-name="{{ $module->name }}">
                                                 <i class="bx bx-trash me-1"></i> Delete
                                             </a>
                                         </li>
@@ -162,10 +162,7 @@
 
 <!-- Content wrapper -->
 
-{{-- @include('admin.pembelajaran.partials.createClassesModal') --}}
-
-
-
+@include('admin.pembelajaran.partials.createModuleModal')
 
 
 @endsection
