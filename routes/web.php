@@ -5,9 +5,11 @@ use App\Http\Controllers\Authentication\RegisterController;
 use App\Http\Controllers\Dashboard\AdminController;
 use App\Http\Controllers\Dashboard\ClassController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Dashboard\ModuleController;
 use App\Http\Controllers\Dashboard\StudentController;
 use App\Http\Controllers\Dashboard\TeacherController;
 use App\Http\Controllers\ExceptionPageController;
+use App\Http\Controllers\ModuleContentController;
 use App\Models\Admin;
 use App\Models\Classes;
 use Illuminate\Support\Facades\Route;
@@ -23,9 +25,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('dashboard.index');
-});
+Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
 
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
@@ -53,8 +53,17 @@ Route::middleware(['auth'])->group(function () {
 
         Route::resource('/dashboard/admin/users/student', StudentController::class);
         Route::put('/dashboard/admin/users/student/s/{student}', [StudentController::class, 'softDelete'])->name('dashboard.student.softDelete');
-
+        
         Route::resource('/dashboard/admin/pembelajaran/class', ClassController::class);
+        Route::put('/dashboard/admin/pembelajaran/class/s/{class}', [ClassController::class, 'softDelete'])->name('dashboard.class.softDelete');
+
+        Route::resource('/dashboard/admin/pembelajaran/module', ModuleController::class);
+        Route::put('/dashboard/admin/pembelajaran/module/{module}/uploadImage', [ModuleController::class, 'uploadImage'])->name('dashboard.module.uploadImage');
+        Route::put('/dashboard/admin/pembelajaran/module/{module}/resetImage', [ModuleController::class, 'resetImage'])->name('dashboard.module.resetImage');
+        
+        Route::get('/dashboard/admin/pembelajaran/module/{moduleId}/content/{contentId}', [ModuleController::class, 'getModuleContent'])->name('dashboard.module.content');
+        Route::resource('/dashboard/admin/pembelajaran/content', ModuleContentController::class);
+
     });
 
     // Route::middleware('role:teacher')->group(function () {

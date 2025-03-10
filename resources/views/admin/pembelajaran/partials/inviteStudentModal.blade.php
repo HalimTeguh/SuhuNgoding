@@ -137,32 +137,35 @@
         closeInviteStudentModal();
 
 
-        // Membuka modal CreateClass
-        openCreateClassModal();
-        renderStudentList();
+
     }
 
+    
+
     function closeInviteStudentModal() {
-            // Ambil elemen modal
-            const modalElement = document.getElementById("addStudentModal");
+        // Ambil elemen modal
+        const modalElement = document.getElementById("addStudentModal");
 
-            // Buat instance modal menggunakan Bootstrap Modal API
-            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        // Buat instance modal menggunakan Bootstrap Modal API
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
 
-            // Jika instance modal ada, tutup modal
-            if (modalInstance) {
-                modalInstance.hide();
-            } else {
-                // Jika modal belum di-inisialisasi, buat instance dan tutup
-                const newModalInstance = new bootstrap.Modal(modalElement);
-                newModalInstance.hide();
-            }
+        // Jika instance modal ada, tutup modal
+        if (modalInstance) {
+            modalInstance.hide();
+        } else {
+            // Jika modal belum di-inisialisasi, buat instance dan tutup
+            const newModalInstance = new bootstrap.Modal(modalElement);
+            newModalInstance.hide();
+        }
 
-            searchInput.value = '';
-            student = null;
+        searchInput.value = '';
+        student = null;
 
             
-            resetInviteStudentModal();
+        resetInviteStudentModal();
+                    // Membuka modal CreateClass
+        openCreateClassModal();
+        renderStudentList();
 
         console.log("Modal Invite Student closed");
     }

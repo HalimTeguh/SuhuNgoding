@@ -22,4 +22,9 @@ class Teacher extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function module()
+    {
+        return $this->hasOne(Module::class, 'teacher_id');
+    }
 }

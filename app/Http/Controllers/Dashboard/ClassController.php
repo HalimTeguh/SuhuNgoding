@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Classes;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class ClassController extends Controller
 {
@@ -54,6 +58,137 @@ class ClassController extends Controller
     public function store(Request $request)
     {
         //
+        try {
+            DB::beginTransaction(); // Mulai transaksi
+
+            $request->validate([
+                'nameCreate' => 'required|string|max:255',
+                'descriptionCreate' => 'nullable|string',
+                'teacherCreate' => 'required|exists:users,id',
+                'imageUpload' => 'nullable|image',
+                // selectedStudents berupa JSON string (opsional)
+            ]);
+
+            // Buat record kelas baru
+            $class = new Classes();
+            $class->name = $request->nameCreate;
+            $class->description = $request->descriptionCreate;
+
+            $teacherUser = User::find($request->teacherCreate);
+            if (!$teacherUser || !$teacherUser->teacher) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('toasts', [
+                        [
+                            'type' => 'danger',
+                            'title' => 'Gagal',
+                            'message' => 'Teacher data not found',
+                            'time' => now()->diffForHumans(),
+                        ]
+                    ])->with('form_error', 'create');
+            }
+            $teacher_id = $teacherUser->teacher->id;
+
+            $class->teacher_id = $teacher_id;
+
+            // Simpan file image jika ada
+            if ($request->hasFile('imageUpload')) {
+                $imagePath = $request->file('imageUpload')->store('classes', 'public');
+                $class->image = $imagePath;
+            }
+
+            $class->save();
+
+            // Proses selected students jika ada
+            if ($request->filled('selectedStudents')) {
+                $selectedStudents = json_decode($request->selectedStudents, true);
+                if (is_array($selectedStudents)) {
+                    $this->processSelectedStudents($class, $selectedStudents);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('toasts', [
+                [
+                    'type' => 'success',
+                    'title' => 'Berhasil',
+                    'message' => "Kelas {$class->name} berhasil ditambahkan",
+                    'time' => now()->diffForHumans()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $errorMessage = $e->getMessage();
+
+            if ($e instanceof \Illuminate\Validation\ValidationException) {
+                return redirect()->back()
+                    ->withErrors($e->errors())
+                    ->withInput()
+                    ->with('toasts', [
+                        [
+                            'type' => 'danger',
+                            'title' => 'Gagal',
+                            'message' => 'Terjadi kesalahan saat validasi data.',
+                            'time' => now()->diffForHumans(),
+                        ]
+                    ])->with('form_error', 'create');
+            }
+
+            return redirect()->back()
+                ->withErrors(['general' => $errorMessage])
+                ->withInput()
+                ->with('toasts', [
+                    [
+                        'type' => 'danger',
+                        'title' => 'Gagal',
+                        'message' => 'Terjadi kesalahan: ' . $errorMessage,
+                        'time' => now()->diffForHumans(),
+                    ]
+                ])->with('form_error', 'create');
+        }
+    }
+
+    /**
+     * Proses data selected students untuk menghubungkan user/student ke kelas.
+     *
+     * @param Classes $class
+     * @param array   $selectedStudents
+     */
+    private function processSelectedStudents(Classes $class, array $selectedStudents)
+    {
+
+        foreach ($selectedStudents as $studentData) {
+            // Cek apakah user sudah ada berdasarkan id
+            $student = Student::where('id', $studentData['id'])->first();
+            $user = User::where('id', $student['user_id'])->first();
+
+            if (!$user) {
+                // Jika belum ada, buat user baru dengan role 'student' dan password dari nis
+                $user = User::create([
+                    'name'     => $studentData['name'],
+                    'email'    => $studentData['email'],
+                    'password' => Hash::make($studentData['nis']),
+                    'role'     => 'student',
+                ]);
+
+                $studentRecord = Student::create([
+                    'user_id' => $user->id,
+                    'NIS'     => $studentData['nis'],
+                ]);
+            } else {
+                // Pastikan record student ada
+                $studentRecord = Student::firstOrCreate(
+                    ['user_id' => $user->id],
+                    ['NIS' => $studentData['nis']]
+                );
+            }
+
+            // Hubungkan student ke kelas (jika belum terhubung)
+            if (!$class->students()->where('student_id', $studentRecord->id)->exists()) {
+                $class->students()->attach($studentRecord->id);
+            }
+        }
     }
 
     /**
@@ -62,6 +197,19 @@ class ClassController extends Controller
     public function show(string $id)
     {
         //
+        $class = Classes::with(['teacher.user', 'students.user'])->findOrFail($id);
+
+        $allTeachers = User::where('role', 'teacher')
+            ->whereNull('deleted_at')
+            ->get();
+
+        return view('admin.pembelajaran.detailClass', [
+            'class' => $class,
+            'teacher' => $class->teacher,
+            'allTeacher' => $allTeachers,
+            'students' => $class->students,
+            'activeMenu' => 'classes'
+        ]);
     }
 
     /**
@@ -70,6 +218,18 @@ class ClassController extends Controller
     public function edit(string $id)
     {
         //
+        // Mengambil data kelas berdasarkan ID, termasuk teacher terkait
+        $class = Classes::with(['teacher.user', 'students.user'])->findOrFail($id);
+
+        // Mengambil semua teacher untuk opsi di select
+        $teachers = User::where('role', 'teacher')
+            ->whereNull('deleted_at')
+            ->get();
+
+        return response()->json([
+            'class' => $class,
+            'teachers' => $teachers,
+        ]);
     }
 
     /**
@@ -77,8 +237,78 @@ class ClassController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        try {
+            DB::beginTransaction(); // Mulai transaksi
+
+            $request->validate([
+                'nameEdit' => 'required|string|max:255',
+                'descriptionEdit' => 'nullable|string',
+                'teacherCreate' => 'required|exists:users,id',
+                'imageUpload' => 'nullable|image',
+                'isImageReset' => 'required|in:true,false',
+            ]);
+
+            // Ambil data kelas berdasarkan ID
+            $class = Classes::findOrFail($id);
+            $class->name = $request->nameEdit;
+            $class->description = $request->descriptionEdit;
+
+            $teacherUser = User::find($request->teacherCreate);
+            if (!$teacherUser || !$teacherUser->teacher) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('toasts', [
+                        [
+                            'type' => 'danger',
+                            'title' => 'Gagal',
+                            'message' => 'Teacher data not found',
+                            'time' => now()->diffForHumans(),
+                        ]
+                    ])->with('form_error', 'update');
+            }
+            $class->teacher_id = $teacherUser->teacher->id;
+
+            // **Handle Image Update**
+            if ($request->isImageReset === "true") {
+                // **Reset Image**
+                if ($class->image) {
+                    $class->image = null;
+                }
+            } elseif ($request->hasFile('imageUpload')) {
+                // **Change Image**
+                $imagePath = $request->file('imageUpload')->store('classes', 'public');
+                $class->image = $imagePath;
+            }
+
+            // **Save data**
+            $class->save();
+
+            DB::commit();
+
+            return redirect()->back()->with('toasts', [
+                [
+                    'type' => 'success',
+                    'title' => 'Berhasil',
+                    'message' => "Kelas {$class->name} berhasil diperbarui",
+                    'time' => now()->diffForHumans()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withErrors(['general' => $e->getMessage()])
+                ->withInput()
+                ->with('toasts', [
+                    [
+                        'type' => 'danger',
+                        'title' => 'Gagal',
+                        'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                        'time' => now()->diffForHumans(),
+                    ]
+                ])->with('form_error', 'update');
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -86,5 +316,33 @@ class ClassController extends Controller
     public function destroy(string $id)
     {
         //
+
+
+    }
+
+    public function softDelete($id)
+    {
+        try {
+            $class = Classes::findOrFail($id);
+            $class->delete(); // Ini hanya mengisi `deleted_at`, tidak menghapus perma
+
+            return redirect('dashboard/admin/pembelajaran/class')->with('toasts', [
+                [
+                    'type' => 'success',
+                    'title' => 'successful',
+                    'message' => "Class {$class->name} has been deleted",
+                    'time' => now()->diffForHumans()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('toasts', [
+                [
+                    'type' => 'danger',
+                    'title' => 'Gagal',
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                    'time' => now()->diffForHumans(),
+                ]
+            ]);
+        }
     }
 }

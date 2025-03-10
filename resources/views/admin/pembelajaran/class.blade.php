@@ -12,6 +12,7 @@
             <div class="w-100">
                 <div class="d-flex justify-content-between align-items-center p-3 bg-white shadow-sm rounded">
                     <h5 id="entityHeader" class="m-0">Class</h5>
+                    {{-- @livewire('create-class-modal') --}}
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createClass">
                         + Add New Class
                     </button>
@@ -34,7 +35,7 @@
                         <tr>
                             <td>{{ $key + 1 }}</td>
                             <td>{{ $class->name }}</td>
-                            <td>{{ $class->teacher->name }}</td>
+                            <td>{{ $class->teacher->user->name }}</td>
                             <td>{{ $class->description }}</td>
                             <td>
                                 <div class="dropdown">
@@ -43,10 +44,9 @@
                                     </button>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a class="dropdown-item edit-class-btn" href="javascript:void(0);"
-                                                data-bs-toggle="offcanvas" data-bs-target="#editClass"
-                                                data-id="{{ $class->id }}" aria-controls="offcanvasEnd">
-                                                <i class="bx bx-edit-alt me-1"></i> Edit
+                                            <a class="dropdown-item view-class-btn"
+                                                href="/dashboard/admin/pembelajaran/class/{{ $class->id }}">
+                                                <i class="bx bx-show me-1"></i> view
                                             </a>
                                         </li>
                                         <li>
@@ -79,7 +79,6 @@
 
 @include('admin.pembelajaran.partials.createClassesModal')
 @include('admin.pembelajaran.partials.inviteStudentModal')
-{{-- @include('admin.users.modal.deleteStudentModal') --}}
 {{-- @include('admin.users.modal.editStudentCanvas') --}}
 
 
