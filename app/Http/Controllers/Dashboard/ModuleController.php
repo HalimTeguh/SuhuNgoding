@@ -175,6 +175,25 @@ class ModuleController extends Controller
         ]);
     }
 
+    public function getModuleContent(string $moduleId, string $contentId)
+    {
+        $content = ModuleContent::where('module_id', $moduleId)
+            ->where('id', $contentId)
+            ->first();
+    
+        if (!$content) {
+            return response()->json(['error' => 'Content not found'], 404);
+        }
+    
+        return response()->json([
+            'id' => $content->id,
+            'title' => $content->title,
+            'summary' => $content->summary,
+            'content' => $content->content
+        ]);
+    }
+    
+
     /**
      * Show the form for editing the specified resource.
      */
