@@ -10,11 +10,20 @@ class Module extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'image', 'description'];
+    protected $fillable = ['teacher_id', 'title', 'status', 'image', 'description'];
 
     public function classes()
     {
         return $this->belongsToMany(Classes::class, 'class_module');
     }
 
+    public function contents()
+    {
+        return $this->hasMany(ModuleContent::class, 'module_id');
+    }
+
+    public function teacher()
+    {
+        return $this->belongsTo(Teacher::class, 'teacher_id');
+    }
 }
