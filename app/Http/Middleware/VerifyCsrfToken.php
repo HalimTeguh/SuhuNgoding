@@ -13,5 +13,7 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         //
+        '/execute', // Tambahkan route ini agar tidak dicek CSRF
+        '/test-docker',
     ];
 }

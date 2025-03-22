@@ -180,11 +180,11 @@ class ModuleController extends Controller
         $content = ModuleContent::where('module_id', $moduleId)
             ->where('id', $contentId)
             ->first();
-    
+
         if (!$content) {
             return response()->json(['error' => 'Content not found'], 404);
         }
-    
+
         return response()->json([
             'id' => $content->id,
             'title' => $content->title,
@@ -192,7 +192,49 @@ class ModuleController extends Controller
             'content' => $content->content
         ]);
     }
-    
+
+    public function getModuleQuiz(string $moduleId, string $contentId)
+    {
+        try {
+            // Ambil quiz yang sesuai dengan content_id
+            $quizzes = Quiz::where('content_id', $contentId)
+                ->with('choices') // Mengambil pilihan jawaban
+                ->get();
+
+            // Jika tidak ada quiz ditemukan
+            if ($quizzes->isEmpty()) {
+                return response()->json(['error' => 'Quiz not found'], 404);
+            }
+
+            // Format respons
+            return response()->json([
+                'content_id' => $contentId,
+                'quizzes' => $quizzes->map(function ($quiz) {
+                    return [
+                        'quiz_id' => $quiz->id,
+                        'question' => $quiz->question,
+                        'correct_answer' => $quiz->correct_answer,
+                        'type' => $quiz->type,
+                        'level_bloom' => $quiz->bloom_level,
+                        'point' => $quiz->point,
+                        'choices' => $quiz->choices ? $quiz->choices->map(function ($choice) {
+                            return [
+                                'choice_id' => $choice->id,
+                                'choice_text' => $choice->choice_text,
+                                'is_correct' => $choice->is_correct,
+                                'feedback' => $choice->feedback,
+                            ];
+                        }) : []
+                    ];
+                })
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
+
 
     /**
      * Show the form for editing the specified resource.
