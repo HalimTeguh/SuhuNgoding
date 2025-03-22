@@ -85,8 +85,6 @@
 
                     </div>
 
-
-
                     <div class="position-absolute top-0 end-0 m-2 z-3 d-flex align-items-center">
                         <div class="d-flex justify-content-end mb-2">
                             <div class="rounded bg-primary shadow-container">

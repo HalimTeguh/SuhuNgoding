@@ -125,6 +125,8 @@
                 localStorage.setItem("activeTab", tabName);
             }
 
+            console.log("tab: ", tabName);
+
             // Tampilkan deleteSection hanya saat Basic tab aktif
             if (tabName === "Basic") {
                 deleteSections.forEach(section => section.classList.remove("d-none"));
@@ -136,6 +138,12 @@
             if (tabName === "Content") {
                 let contentId = activeContent || 1; // Default ke pertemuan 1 jika belum ada yang disimpan
                 loadContent(moduleId, contentId);
+            }
+
+            // Jika masuk ke tab Content, load pertemuan terakhir yang aktif
+            if (tabName === "Content") {
+                let quizId = activeContent || 1; // Default ke pertemuan 1 jika belum ada yang disimpan
+                loadQuiz(moduleId, contentId);
             }
         }
 

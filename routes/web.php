@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\Authentication\LoginController;
 use App\Http\Controllers\Authentication\RegisterController;
+use App\Http\Controllers\CodeExecutionController;
 use App\Http\Controllers\Dashboard\AdminController;
 use App\Http\Controllers\Dashboard\ClassController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\ModuleController;
+use App\Http\Controllers\Dashboard\ModuleQuizController;
 use App\Http\Controllers\Dashboard\StudentController;
 use App\Http\Controllers\Dashboard\TeacherController;
 use App\Http\Controllers\ExceptionPageController;
@@ -29,6 +31,12 @@ Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
 
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
+Route::post('/execute', [CodeExecutionController::class, 'executePython']);
+
+Route::get('/test-docker', function () {
+    return shell_exec("docker --version 2>&1");
+});
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->name('login');
@@ -42,7 +50,11 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth'])->group(function () {
     // Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
 
+
     Route::middleware('role:admin')->group(function () {
+
+
+
         Route::get('/dashboard/admin', [DashboardController::class, 'admin'])->name('dashboard.admin');
 
         Route::resource('/dashboard/admin/users/admin', AdminController::class);
@@ -62,7 +74,9 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/dashboard/admin/pembelajaran/module/{module}/resetImage', [ModuleController::class, 'resetImage'])->name('dashboard.module.resetImage');
         
         Route::get('/dashboard/admin/pembelajaran/module/{moduleId}/content/{contentId}', [ModuleController::class, 'getModuleContent'])->name('dashboard.module.content');
+        Route::get('/dashboard/admin/pembelajaran/module/{moduleId}/content/{contentId}/quiz', [ModuleController::class, 'getModuleQuiz'])->name('dashboard.module.quiz');
         Route::resource('/dashboard/admin/pembelajaran/content', ModuleContentController::class);
+        Route::resource('/dashboard/admin/pembelajaran/quiz', ModuleQuizController::class);
 
     });
 

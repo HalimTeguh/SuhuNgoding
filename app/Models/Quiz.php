@@ -10,7 +10,7 @@ class Quiz extends Model
 {
     use HasFactory;
 
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = ['content_id', 'question', 'type', 'correct_answer', 'point', 'bloom_level'];
 

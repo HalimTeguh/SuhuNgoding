@@ -12,8 +12,8 @@
                     <div id="stepperForm" class="bs-stepper">
                         <div class="bs-stepper-header" role="tablist">
                             <div class="step" data-target="#step-1">
-                                <button type="button" class="step-trigger d-flex align-items-center">
-                                    <span class="bs-stepper-box custom-stepper-box bg-primary">1</span>
+                                <button type="button" class="step-trigger d-flex align-items-center ">
+                                    <span class="bs-stepper-box custom-stepper-box bg-primary btn btn-primary">1</span>
                                     <span class="bs-stepper-label d-flex flex-column ms-3">
                                         <div class="step-title text-primary ">Account Details</div>
                                         <div class="step-subtitle text-secondary">Setup your account</div>
@@ -24,7 +24,7 @@
                                 <div class="d-flex">
                                     <i class="bx bx-chevron-right arrow-icon"></i>
                                     <button type="button" class="step-trigger d-flex align-items-center">
-                                        <span class="bs-stepper-box custom-stepper-box bg-primary">2</span>
+                                        <span class="bs-stepper-box custom-stepper-box bg-primary btn btn-primary">2</span>
                                         <span class="bs-stepper-label d-flex flex-column ms-3">
                                             <div class="step-title text-primary ">Users Class</div>
                                             <div class="step-subtitle text-secondary">Setup teachers and students in the
@@ -37,7 +37,7 @@
                                 <div class="d-flex">
                                     <i class="bx bx-chevron-right arrow-icon"></i>
                                     <button type="button" class="step-trigger d-flex align-items-center">
-                                        <span class="bs-stepper-box custom-stepper-box bg-primary">3</span>
+                                        <span class="bs-stepper-box custom-stepper-box bg-primary btn btn-primary">3</span>
                                         <span class="bs-stepper-label d-flex flex-column ms-3">
                                             <div class="step-title text-primary ">Confirmation</div>
                                             <div class="step-subtitle text-secondary">Confirm class data</div>
