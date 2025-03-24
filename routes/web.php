@@ -78,6 +78,8 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('/dashboard/admin/pembelajaran/content', ModuleContentController::class);
         Route::resource('/dashboard/admin/pembelajaran/quiz', ModuleQuizController::class);
 
+        Route::delete('/dashboard/admin/pembelajaran/quiz/option/{optionId}', [ModuleQuizController::class, 'deleteOption'])->name('dashboard.module.quiz.deleteOption');
+
     });
 
     // Route::middleware('role:teacher')->group(function () {

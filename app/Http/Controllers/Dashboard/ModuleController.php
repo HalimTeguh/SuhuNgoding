@@ -198,8 +198,33 @@ class ModuleController extends Controller
         try {
             // Ambil quiz yang sesuai dengan content_id
             $quizzes = Quiz::where('content_id', $contentId)
-                ->with('choices') // Mengambil pilihan jawaban
-                ->get();
+                ->with(['choices', 'code']) // Mengambil pilihan jawaban dan kode
+                ->get()
+                ->map(function ($quiz) {
+                    return [
+                        'quiz_id' => $quiz->id,
+                        'question' => $quiz->question,
+                        'correct_answer' => $quiz->correct_answer,
+                        'type' => $quiz->type,
+                        'level_bloom' => $quiz->bloom_level,
+                        'point' => $quiz->point,
+                        'choices' => $quiz->type === 'multiple_choice' ? $quiz->choices->map(function ($choice) {
+                            return [
+                                'choice_id' => $choice->id,
+                                'choice_text' => $choice->choice_text,
+                                'is_correct' => $choice->is_correct,
+                                'feedback' => $choice->feedback,
+                            ];
+                        }) : [],
+                        'code' => $quiz->type === 'code' ? $quiz->code->map(function ($code) {
+                            return [
+                                'expected_output' => $code->expected_output,
+                                'test_cases' => $code->test_cases,
+                                'feedback' => $code->feedback,
+                            ];
+                        }) : []
+                    ];
+                });
 
             // Jika tidak ada quiz ditemukan
             if ($quizzes->isEmpty()) {
@@ -209,24 +234,7 @@ class ModuleController extends Controller
             // Format respons
             return response()->json([
                 'content_id' => $contentId,
-                'quizzes' => $quizzes->map(function ($quiz) {
-                    return [
-                        'quiz_id' => $quiz->id,
-                        'question' => $quiz->question,
-                        'correct_answer' => $quiz->correct_answer,
-                        'type' => $quiz->type,
-                        'level_bloom' => $quiz->bloom_level,
-                        'point' => $quiz->point,
-                        'choices' => $quiz->choices ? $quiz->choices->map(function ($choice) {
-                            return [
-                                'choice_id' => $choice->id,
-                                'choice_text' => $choice->choice_text,
-                                'is_correct' => $choice->is_correct,
-                                'feedback' => $choice->feedback,
-                            ];
-                        }) : []
-                    ];
-                })
+                'quizzes' => $quizzes
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

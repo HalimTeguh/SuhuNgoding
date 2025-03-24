@@ -60,7 +60,7 @@ class ModuleContentController extends Controller
 
             $request->validate([
                 'chapterName' => 'required|string|max:255',
-                'moduleSummary' => 'nullable|string|max:255',
+                'moduleSummary' => 'nullable|string',
                 'moduleContent' => 'nullable|string', // Hilangkan max:255 jika isinya panjang
             ]);
     

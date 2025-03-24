@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Quiz;
 use App\Models\QuizChoice;
+use App\Models\QuizCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -36,15 +37,18 @@ class ModuleQuizController extends Controller
 
             // Validasi input
             $request->validate([
-                'moduleQuiz' => 'required|string|max:255',
-                'typeQuestion' => 'nullable|string',
+                'moduleQuiz' => 'required|string',
+                'typeQuestion' => 'required|string|in:multiple_choice,code',
                 'currentContent' => 'nullable|integer',
                 'pointQuestion' => 'nullable|integer',
                 'levelBloom' => 'nullable|string',
-                'options' => 'nullable|array',
-                'options.*.text' => 'nullable|string',
-                'options.*.is_correct' => 'nullable|boolean',
+                'options' => 'nullable|array|required_if:typeQuestion,multiple_choice',
+                'options.*.text' => 'required_if:typeQuestion,multiple_choice|string',
+                'options.*.is_correct' => 'required_if:typeQuestion,multiple_choice|boolean',
                 'options.*.feedback' => 'nullable|string',
+                'codeAnswer' => 'nullable|string|required_if:typeQuestion,code',
+                'codeOutputInput' => 'nullable|string|required_if:typeQuestion,code',
+                'codeFeedback' => 'nullable|string|',
             ]);
 
             // Simpan data quiz baru
@@ -56,14 +60,27 @@ class ModuleQuizController extends Controller
                 'point' => $request->pointQuestion,
             ]);
 
-            // Simpan pilihan jawaban (options)
-            foreach ($request->options as $choice) {
-                QuizChoice::create([
+            // Jika tipe soal adalah multiple choice, simpan pilihan jawaban
+            if ($request->typeQuestion === 'multiple_choice') {
+                foreach ($request->options as $choice) {
+                    QuizChoice::create([
+                        'quiz_id' => $quiz->id,
+                        'choice_text' => $choice['text'],
+                        'is_correct' => $choice['is_correct'],
+                        'feedback' => $choice['feedback'] ?? null,
+                    ]);
+                }
+            }
+            // Jika tipe soal adalah code, simpan kode dan test case
+            elseif ($request->typeQuestion === 'code') {
+                $quizCode = new QuizCode([
                     'quiz_id' => $quiz->id,
-                    'choice_text' => $choice['text'],
-                    'is_correct' => $choice['is_correct'],
-                    'feedback' => $choice['feedback'],
+                    'test_cases' => $request->codeAnswer,
+                    'expected_output' => $request->codeOutputInput,
+                    'language' => "python",
+                    'feedback' => $request->codeFeedback ?? null,
                 ]);
+                $quizCode->save();
             }
 
             DB::commit(); // Simpan perubahan
@@ -93,6 +110,7 @@ class ModuleQuizController extends Controller
     }
 
 
+
     /**
      * Display the specified resource.
      */
@@ -114,23 +132,25 @@ class ModuleQuizController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
-
         try {
             DB::beginTransaction(); // Mulai transaksi
 
             $request->validate([
-                'moduleQuiz' => 'required|string|max:255',
-                'typeQuestion' => 'nullable|string',
+                'moduleQuiz' => 'required|string',
+                'typeQuestion' => 'nullable|string|in:multiple_choice,code',
                 'pointQuestion' => 'nullable|integer',
                 'levelBloom' => 'nullable|string',
-                'levelBloom' => 'nullable|string',
+                'options' => 'nullable|array|required_if:typeQuestion,multiple_choice',
+                'options.*.id' => 'nullable',
+                'options.*.text' => 'required_if:typeQuestion,multiple_choice|string',
+                'options.*.is_correct' => 'required_if:typeQuestion,multiple_choice|boolean',
+                'options.*.feedback' => 'nullable|string',
+                'codeAnswer' => 'nullable|string|required_if:typeQuestion,code',
+                'codeOutputInput' => 'nullable|string|required_if:typeQuestion,code',
             ]);
 
-            // Cari data berdasarkan ID yang dikirimkan
             $quiz = Quiz::findOrFail($id);
 
-            // Update data
             $quiz->update([
                 'question' => $request->moduleQuiz,
                 'type' => $request->typeQuestion,
@@ -138,27 +158,33 @@ class ModuleQuizController extends Controller
                 'point' => $request->pointQuestion,
             ]);
 
-            // Update atau Tambahkan pilihan jawaban
-            foreach ($request->options as $choice) {
-                if (!empty($choice['id']) && is_numeric($choice['id'])) {
-                    // Jika ID pilihan ada, update data yang sudah ada
-                    $option = QuizChoice::find($choice['id']);
-                    if ($option) {
-                        $option->update([
+            if ($request->typeQuestion === 'multiple_choice') {
+                foreach ($request->options as $choice) {
+                    if (!empty($choice['id']) && is_numeric($choice['id'])) {
+                        $option = QuizChoice::find($choice['id']);
+                        if ($option) {
+                            $option->update([
+                                'choice_text' => $choice['text'],
+                                'is_correct' => $choice['is_correct'],
+                                'feedback' => $choice['feedback'],
+                            ]);
+                        }
+                    } else {
+                        QuizChoice::create([
+                            'quiz_id' => $quiz->id,
                             'choice_text' => $choice['text'],
                             'is_correct' => $choice['is_correct'],
                             'feedback' => $choice['feedback'],
                         ]);
                     }
-                } else {
-                    // Jika tidak ada ID, buat data baru
-                    QuizChoice::create([
-                        'quiz_id' => $quiz->id,
-                        'choice_text' => $choice['text'],
-                        'is_correct' => $choice['is_correct'],
-                        'feedback' => $choice['feedback'],
-                    ]);
                 }
+            } elseif ($request->typeQuestion === 'code') {
+                $quizCode = $quiz->code()->firstOrNew();
+                $quizCode->test_cases = $request->codeAnswer;
+                $quizCode->expected_output = $request->codeOutputInput;
+                $quizCode->language = "python";
+                $quizCode->feedback = $request->codeFeedback;
+                $quizCode->save();
             }
 
             DB::commit();
@@ -184,6 +210,37 @@ class ModuleQuizController extends Controller
                         'time' => now()->diffForHumans(),
                     ]
                 ])->with('form_error', 'update');
+        }
+    }
+
+    public function deleteOption(Request $request, $optionId)
+    {
+        try {
+            // Cari opsi berdasarkan ID
+            $option = QuizChoice::find($optionId);
+    
+            // Jika opsi tidak ditemukan, kirim respons error
+            if (!$option) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Opsi tidak ditemukan.'
+                ], 404);
+            }
+    
+            // Hapus opsi
+            $option->delete();
+    
+            // Berhasil menghapus, kirim respons sukses
+            return response()->json([
+                'success' => true,
+                'message' => 'Opsi berhasil dihapus.'
+            ]);
+        } catch (\Exception $e) {
+            // Tangani error dan kirim respons error
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
     }
 

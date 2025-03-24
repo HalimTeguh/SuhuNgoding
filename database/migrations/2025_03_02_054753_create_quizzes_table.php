@@ -14,9 +14,8 @@ return new class extends Migration
         Schema::create('quizzes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('content_id')->constrained('module_contents')->onDelete('cascade');
-            $table->string('question');
+            $table->text('question');
             $table->enum('type', ['multiple_choice', 'code']);
-            $table->string('correct_answer')->nullable();
             $table->integer('point')->nullable();
             $table->string('bloom_level')->nullable();
             $table->timestamps();
