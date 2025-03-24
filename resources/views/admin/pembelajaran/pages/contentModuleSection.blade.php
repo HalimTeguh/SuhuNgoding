@@ -85,8 +85,6 @@
 
                     </div>
 
-
-
                     <div class="position-absolute top-0 end-0 m-2 z-3 d-flex align-items-center">
                         <div class="d-flex justify-content-end mb-2">
                             <div class="rounded bg-primary shadow-container">
@@ -130,7 +128,7 @@
         </div>
     </div>
 </div>
-
+{{-- 
 <!-- Modal Konfirmasi -->
 <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -148,7 +146,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> --}}
 
 
 

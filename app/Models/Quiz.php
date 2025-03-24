@@ -4,15 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Quiz extends Model
 {
     use HasFactory;
 
-    use HasFactory, SoftDeletes;
-
-    protected $fillable = ['content_id', 'question', 'type', 'correct_answer', 'point', 'bloom_level'];
+    protected $fillable = ['content_id', 'question', 'type', 'point', 'bloom_level'];
 
     public function content()
     {
@@ -22,5 +19,10 @@ class Quiz extends Model
     public function choices()
     {
         return $this->hasMany(QuizChoice::class, 'quiz_id');
+    }
+
+    public function code()
+    {
+        return $this->hasMany(QuizCode::class, 'quiz_id');
     }
 }

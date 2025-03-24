@@ -110,7 +110,5 @@
             toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | indent outdent | bullist numlist',
             menubar: false
         });
-
-        
     });
 </script>

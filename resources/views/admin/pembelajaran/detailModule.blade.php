@@ -11,6 +11,8 @@
         <div class="row fv-plugins-icon-container">
             <div class="col-md-12">
                 <div class="nav-align-top">
+                    <h5 id="entityHeader" class="m-0 d-none">Module</h5>
+
                     <ul class="nav nav-pills flex-column flex-md-row mb-6">
                         <li class="nav-item"><a class="nav-link active" href="javascript:void(0);" data-tab="Basic"><i
                                     class="bx bx-sm bx-spreadsheet me-1_5"></i> Basic</a></li>
@@ -125,6 +127,8 @@
                 localStorage.setItem("activeTab", tabName);
             }
 
+            console.log("tab: ", tabName);
+
             // Tampilkan deleteSection hanya saat Basic tab aktif
             if (tabName === "Basic") {
                 deleteSections.forEach(section => section.classList.remove("d-none"));
@@ -136,6 +140,12 @@
             if (tabName === "Content") {
                 let contentId = activeContent || 1; // Default ke pertemuan 1 jika belum ada yang disimpan
                 loadContent(moduleId, contentId);
+            }
+
+            // Jika masuk ke tab Content, load pertemuan terakhir yang aktif
+            if (tabName === "Content") {
+                let quizId = activeContent || 1; // Default ke pertemuan 1 jika belum ada yang disimpan
+                loadQuiz(moduleId, contentId);
             }
         }
 
