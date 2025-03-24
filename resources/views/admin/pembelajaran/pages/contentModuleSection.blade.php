@@ -128,7 +128,7 @@
         </div>
     </div>
 </div>
-
+{{-- 
 <!-- Modal Konfirmasi -->
 <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -146,7 +146,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> --}}
 
 
 

@@ -11,6 +11,7 @@
   <title>Suhu Ngoding</title>
 
   <meta name="description" content="" />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
@@ -51,9 +52,8 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bs-stepper/dist/css/bs-stepper.min.css">
   <script src="https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js"></script>
-
-  <script src="https://cdn.tiny.cloud/1/014ttxkbq020o9a1tzsls6f6ft0oeyxp3ezqji7a43v06i81/tinymce/7/tinymce.min.js"
-    referrerpolicy="origin"></script>
+  
+  <script src="https://cdn.tiny.cloud/1/eybtrn69cc9l77oqefyngf2jpkb2xp0m1a4w081ebftjl8vq/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
 
   <!-- CodeMirror Styles -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">

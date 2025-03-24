@@ -11,6 +11,8 @@
         <div class="row fv-plugins-icon-container">
             <div class="col-md-12">
                 <div class="nav-align-top">
+                    <h5 id="entityHeader" class="m-0 d-none">Module</h5>
+
                     <ul class="nav nav-pills flex-column flex-md-row mb-6">
                         <li class="nav-item"><a class="nav-link active" href="javascript:void(0);" data-tab="Basic"><i
                                     class="bx bx-sm bx-spreadsheet me-1_5"></i> Basic</a></li>
