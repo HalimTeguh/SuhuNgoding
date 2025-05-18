@@ -31,4 +31,7 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'huggingface' => [
+        'token' => env('HUGGINGFACE_API_TOKEN'),
+    ],
 ];

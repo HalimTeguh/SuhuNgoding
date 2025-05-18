@@ -508,3 +508,37 @@
 .CodeMirror-line {
     padding-left: 50px !important; /* Sesuaikan dengan kebutuhan */
 }
+
+.code-editor {
+    background-color: #2d2d2d;
+    color: #f8f8f2;
+    padding: 16px;
+    border-radius: 6px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    overflow-x: auto;
+    margin: 16px 0;
+}
+
+.code-editor pre {
+    margin: 0;
+    /* white-space: pre-wrap; */
+}
+
+.code-editor code {
+    display: block;
+}
+
+.spinner {
+  border: 6px solid #eee;
+  border-top: 6px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin: 20px auto;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

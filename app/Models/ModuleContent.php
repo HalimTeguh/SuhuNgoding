@@ -9,7 +9,7 @@ class ModuleContent extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['module_id', 'title', 'content', 'summary'];
+    protected $fillable = ['module_id', 'title', 'content', 'summary', 'source_uudid', 'media_files', 'source_type'];
 
     public function module()
     {

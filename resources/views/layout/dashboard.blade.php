@@ -52,8 +52,9 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bs-stepper/dist/css/bs-stepper.min.css">
   <script src="https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js"></script>
-  
-  <script src="https://cdn.tiny.cloud/1/eybtrn69cc9l77oqefyngf2jpkb2xp0m1a4w081ebftjl8vq/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+
+  <script src="https://cdn.tiny.cloud/1/eybtrn69cc9l77oqefyngf2jpkb2xp0m1a4w081ebftjl8vq/tinymce/7/tinymce.min.js"
+    referrerpolicy="origin"></script>
 
   <!-- CodeMirror Styles -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
@@ -303,6 +304,17 @@
 
     });
   </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const toastElList = [].slice.call(document.querySelectorAll('.toast'))
+      toastElList.forEach(function (toastEl) {
+          const toast = new bootstrap.Toast(toastEl, { delay: 4000 })
+          toast.show()
+      });
+  });
+  </script>
+
 
 
 

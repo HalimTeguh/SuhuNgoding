@@ -16,7 +16,10 @@ return new class extends Migration
             $table->foreignId('module_id')->constrained('modules')->onDelete('cascade');
             $table->string('title');
             $table->text('summary')->nullable();
-            $table->text('content')->nullable();
+            $table->text('content')->nullable(); // HTML siap pakai
+            $table->uuid('source_uuid')->nullable(); // UUID folder hasil konversi PDF
+            $table->json('media_files')->nullable(); // list file gambar
+            $table->string('source_type')->nullable(); // pdf/docx
             $table->timestamps();
             $table->softDeletes();
         });

@@ -10,7 +10,11 @@ use App\Models\QuizChoice;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\Writer\PDF;
+use Smalot\PdfParser\Parser;
 
 class ModuleController extends Controller
 {
@@ -351,6 +355,30 @@ class ModuleController extends Controller
         return response()->json(['success' => true, 'message' => 'Gambar berhasil direset']);
     }
 
+    
+    public function convertPdf(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:pdf'
+        ]);
+
+        $pdfFile = $request->file('file');
+        $pdfPath = $pdfFile->storeAs('uploads', $pdfFile->getClientOriginalName());
+
+        $command = "docker compose run --rm converter /app/$pdfPath";
+        exec($command, $output, $status);
+
+        if ($status === 0) {
+            $docxFile = str_replace('.pdf', '.docx', $pdfFile->getClientOriginalName());
+            $convertedPath = 'converted/' . $docxFile;
+
+            Storage::move('uploads/' . $docxFile, $convertedPath);
+
+            return response()->download(storage_path("app/" . $convertedPath));
+        } else {
+            return response()->json(['error' => 'Konversi gagal'], 500);
+        }
+    }
 
 
     /**

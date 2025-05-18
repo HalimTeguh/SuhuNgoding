@@ -104,11 +104,20 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        tinymce.init({
-            selector: 'textarea#descriptionEdit', // Replace this CSS selector to match the placeholder element for TinyMCE
-            toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | indent outdent | bullist numlist',
-            menubar: false
-        });
+    tinymce.init({
+        selector: 'textarea#descriptionEdit',
+        plugins: [
+            'autoresize', 'image', 'link', 'lists', 'code', 'table'
+        ],
+        height: 1000,
+        toolbar: `
+            undo redo | blocks | bold italic underline strikethrough |
+            alignleft aligncenter alignright alignjustify |
+            bullist numlist outdent indent | link image | code
+        `,
+        branding: false,
+        menubar: "insert format table",
+        contextmenu: "link blocks image | bold italic underline",
+
     });
 </script>

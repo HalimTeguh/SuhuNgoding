@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AiController;
 use App\Http\Controllers\Authentication\LoginController;
 use App\Http\Controllers\Authentication\RegisterController;
 use App\Http\Controllers\CodeExecutionController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Dashboard\ModuleQuizController;
 use App\Http\Controllers\Dashboard\StudentController;
 use App\Http\Controllers\Dashboard\TeacherController;
 use App\Http\Controllers\ExceptionPageController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\ModuleContentController;
 use App\Models\Admin;
 use App\Models\Classes;
@@ -33,10 +35,6 @@ Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::post('/execute', [CodeExecutionController::class, 'executePython']);
 
-Route::get('/test-docker', function () {
-    return shell_exec("docker --version 2>&1");
-});
-
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->name('login');
@@ -50,9 +48,11 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth'])->group(function () {
     // Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
 
+    Route::post('/upload-image', [FileController::class, 'uploadImage'])->name('upload.image');
+    
+    Route::post('/generate-soal', [AiController::class, 'generateSoalFromLLM']);
 
     Route::middleware('role:admin')->group(function () {
-
 
 
         Route::get('/dashboard/admin', [DashboardController::class, 'admin'])->name('dashboard.admin');
@@ -75,10 +75,14 @@ Route::middleware(['auth'])->group(function () {
         
         Route::get('/dashboard/admin/pembelajaran/module/{moduleId}/content/{contentId}', [ModuleController::class, 'getModuleContent'])->name('dashboard.module.content');
         Route::get('/dashboard/admin/pembelajaran/module/{moduleId}/content/{contentId}/quiz', [ModuleController::class, 'getModuleQuiz'])->name('dashboard.module.quiz');
+        Route::post('/dashboard/admin/pembelajaran/module/{moduleId}/content/{contentId}/import', [ModuleController::class, 'importModule'])->name('dashboard.module.importContent');
         Route::resource('/dashboard/admin/pembelajaran/content', ModuleContentController::class);
         Route::resource('/dashboard/admin/pembelajaran/quiz', ModuleQuizController::class);
 
         Route::delete('/dashboard/admin/pembelajaran/quiz/option/{optionId}', [ModuleQuizController::class, 'deleteOption'])->name('dashboard.module.quiz.deleteOption');
+
+
+        // Route::post('/convert-pdf', [ModuleQuizController::class, 'convertPdf']);
 
     });
 
