@@ -52,6 +52,8 @@ Route::middleware(['auth'])->group(function () {
     
     Route::post('/generate-soal', [AiController::class, 'generateSoalFromLLM']);
 
+    Route::get('/download/template-student', [FileController::class, 'downloadTemplateStudentExcel'])->name('download.template.student');
+
     Route::middleware('role:admin')->group(function () {
 
 

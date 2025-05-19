@@ -104,68 +104,13 @@ class FileController extends Controller
         ]);
     }
 
-    // public function handleUpload(Request $request)
-    // {
-    //     $request->validate([
-    //         'file' => 'required|mimes:pdf|max:10240',
-    //     ]);
-
-    //     $file = $request->file('file');
-    //     $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-
-    //     $shareFolder = storage_path('app/converter-share');
-    //     if (!file_exists($shareFolder)) {
-    //         mkdir($shareFolder, 0755, true);
-    //     }
-
-    //     // Simpan file PDF ke folder share
-    //     $file->move($shareFolder, 'input.pdf');
-
-    //     // Dummy padding agar fetch tidak timeout
-    //     header('X-Accel-Buffering: no');
-    //     echo str_pad('', 1024); // kirim 1KB padding
-    //     ob_flush();
-    //     flush();
-
-    //     $inputPath = $shareFolder . '/input.pdf';
-    //     $outputPath = $shareFolder . '/output.docx';
-
-
-    //     // Eksekusi konversi di container
-    //     $command = "docker exec converter-instance python3 /app/convert.py /app/share/input.pdf /app/share/output.docx";
-    //     $process = Process::fromShellCommandline($command, null, ['PATH' => getenv('PATH')]);
-
-    //     // (Optional) kasih timeout 120 detik biar gak infinite loop kalau error
-    //     $process->setTimeout(120);
-
-    //     $process->run();
-
-    //     if (!$process->isSuccessful()) {
-    //         logger()->error('Convert error', [
-    //             'stdout' => $process->getOutput(),
-    //             'stderr' => $process->getErrorOutput(),
-    //         ]);
-    //         throw new ProcessFailedException($process);
-    //     }
-
-    //     if (!file_exists($outputPath)) {
-    //         // Tidak menghapus file karena ingin menyimpan
-    //         return redirect()->back()
-    //             ->withInput()
-    //             ->with('toasts', [
-    //                 [
-    //                     'type' => 'danger',
-    //                     'title' => 'Gagal',
-    //                     'message' => 'Gagal menemukan file output setelah konversi.',
-    //                     'time' => now()->diffForHumans(),
-    //                 ]
-    //             ])
-    //             ->with('form_error', 'update');
-    //     }
-
-    //     // Download hasil TANPA hapus file setelah dikirim
-    //     return response()->json([
-    //         'location' => asset('storage/uploads/temp/' . $filename) // atau path sesuai kamu
-    //     ]);
-    // }
+    public function downloadTemplateStudentExcel(){
+        $file = storage_path('app/public/templates/Template_import_data_siswa.xlsx');
+    
+        if (!file_exists($file)) {
+            abort(404, 'Template not found');
+        }
+    
+        return response()->download($file, 'template_students.xlsx');
+    }
 }

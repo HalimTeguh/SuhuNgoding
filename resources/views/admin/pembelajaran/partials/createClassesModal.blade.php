@@ -1,4 +1,5 @@
-<form action="{{ url('dashboard/admin/pembelajaran/class') }}" method="POST" enctype="multipart/form-data" id="createClassForm">
+<form action="{{ url('dashboard/admin/pembelajaran/class') }}" method="POST" enctype="multipart/form-data"
+    id="createClassForm">
     @csrf
     <!-- Modal Create -->
     <div class="modal fade" id="createClass" tabindex="-1" aria-hidden="true">
@@ -24,7 +25,8 @@
                                 <div class="d-flex">
                                     <i class="bx bx-chevron-right arrow-icon"></i>
                                     <button type="button" class="step-trigger d-flex align-items-center">
-                                        <span class="bs-stepper-box custom-stepper-box bg-primary btn btn-primary">2</span>
+                                        <span
+                                            class="bs-stepper-box custom-stepper-box bg-primary btn btn-primary">2</span>
                                         <span class="bs-stepper-label d-flex flex-column ms-3">
                                             <div class="step-title text-primary ">Users Class</div>
                                             <div class="step-subtitle text-secondary">Setup teachers and students in the
@@ -37,7 +39,8 @@
                                 <div class="d-flex">
                                     <i class="bx bx-chevron-right arrow-icon"></i>
                                     <button type="button" class="step-trigger d-flex align-items-center">
-                                        <span class="bs-stepper-box custom-stepper-box bg-primary btn btn-primary">3</span>
+                                        <span
+                                            class="bs-stepper-box custom-stepper-box bg-primary btn btn-primary">3</span>
                                         <span class="bs-stepper-label d-flex flex-column ms-3">
                                             <div class="step-title text-primary ">Confirmation</div>
                                             <div class="step-subtitle text-secondary">Confirm class data</div>
@@ -112,6 +115,7 @@
 
                             <!-- Step 2 -->
                             <div id="step-2" class="content" role="tabpanel" aria-labelledby="step-2-trigger">
+                                <input type="file" id="importExcelInput" accept=".xlsx,.xls" style="display: none;">
                                 <!-- Select Teacher -->
                                 <div class="mb-3">
                                     <label for="teacherCreate" class="form-label">Teacher</label>
@@ -131,6 +135,8 @@
                                 <div id="studentContainer" class="student-container p-3 border rounded">
                                     <!-- Row: Search and Add Student -->
                                     <div class="d-flex justify-content-between mb-3">
+
+
                                         <input type="text" class="form-control flex-grow-1" id="searchStudent"
                                             placeholder="Search student">
                                         <button type="button" class="btn btn-primary ms-2 py-3"
@@ -146,7 +152,7 @@
 
                                     </div>
                                 </div>
-                                
+
                                 <!-- Navigation Buttons -->
                                 <div class="d-flex justify-content-between mt-4">
                                     <input type="hidden" id="selectedStudentsInput" name="selectedStudents" value="">
@@ -166,7 +172,7 @@
                                         <div id="imagePreviewConfirmation" class="image-preview-container">
                                             <i id="defaultIconConfirmation"
                                                 class="fa-regular fa-image default-preview-icon"></i>
-                                            <img id="imagePreviewConfirmationImg" src="#" alt="Preview"/>
+                                            <img id="imagePreviewConfirmationImg" src="#" alt="Preview" />
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Class Name</label>
@@ -210,7 +216,8 @@
     </div>
 </form>
 
-
+<!-- Addons untuk Read Excel file -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
     let nameClass = null;
@@ -224,9 +231,43 @@
         nameClass = document.getElementsByClassName('nameCreate');
         descClass = document.getElementsByClassName('descriptionCreate');
 
-
-
     });
+
+    document.getElementById('importExcelInput').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (!file) {
+            console.log('No file selected');
+            return;
+        }
+
+        console.log('Reading file:', file.name);
+
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const json = XLSX.utils.sheet_to_json(sheet);
+
+            console.log("Parsed Excel JSON:", json); // <--- Tambahkan ini!
+
+            selectedStudents = json.map((row, index) => ({
+                id: `temp-${Date.now()}-${index}`,
+                name: row.name || '',
+                email: row.email || '',
+                nis: row.NIS || '',
+                institution: row.institution || '',
+                address: row.address || ''
+            }));
+
+            renderStudentList();
+        };
+
+        reader.readAsArrayBuffer(file);
+    });
+
+
 
     renderStudentList();
 
@@ -284,8 +325,12 @@
                             <i class="bx bx-dots-vertical-rounded"></i>
                         </button>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Import from CSV</a></li>
-                            <li><a class="dropdown-item" href="#">Import from Excel</a></li>
+                            <li><a class="dropdown-item" href="/download/template-student">Download Template Excel</a></li>
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="document.getElementById('importExcelInput').click(); return false;">
+                                    Import from Excel
+                                </a>
+                            </li>
                         </ul>
                     </div>
                     <div class="d-flex flex-column align-items-center justify-content-center" style="height: 100%;">
@@ -323,7 +368,6 @@
                 studentListElement.appendChild(studentCard); // Tambahkan ke elemen #studentList
             });
         }
-
         updateSelectedStudentsInput();
     }
 
