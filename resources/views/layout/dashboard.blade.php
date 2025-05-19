@@ -64,6 +64,7 @@
 
 
 
+
   <!-- CodeMirror Core -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
 
@@ -74,7 +75,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
 
-
+  <!-- Addons untuk Read Excel file -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 
 </head>
@@ -175,6 +177,13 @@
   <script async defer src="https://buttons.github.io/buttons.js"></script>
 
   <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        setDeleteModal('class');
+        setDeleteModal('student');
+        setDeleteModal('teacher');
+        // Tambahkan lainnya jika ada
+    });
+
     document.addEventListener("DOMContentLoaded", function() {
         // Ambil entity dari header dengan ID khusus
         var entity = document.getElementById("entityHeader").textContent.toLowerCase().trim();
@@ -211,17 +220,30 @@
 
         // Function: Set delete modal for admin or teacher
         function setDeleteModal(entity) {
-            var deleteModal = document.getElementById(`delete${capitalize(entity)}`);
-            var deleteForm = document.getElementById(`delete${capitalize(entity)}Form`);
-            var deleteName = document.getElementById(`delete${capitalize(entity)}Name`);
+            const capitalized = entity.charAt(0).toUpperCase() + entity.slice(1);
+            const deleteModal = document.getElementById(`delete${capitalized}`);
+            const deleteForm = document.getElementById(`delete${capitalized}Form`);
+            const deleteName = document.getElementById(`delete${capitalized}Name`);
 
-            deleteModal.addEventListener("show.bs.modal", function(event) {
-                var button = event.relatedTarget;
-                var id = button.getAttribute("data-id");
-                var name = button.getAttribute("data-name");
+            // Event ketika modal dibuka
+            deleteModal.addEventListener("show.bs.modal", function (event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute("data-id");
+                const name = button.getAttribute("data-name");
 
+                // Set nama entitas di teks modal
                 deleteName.textContent = name;
-                deleteForm.action = `/dashboard/admin/users/${entity}/s/${id}`;
+
+                // Atur URL form delete berdasarkan entity
+                let actionUrl = '';
+                if (entity === 'class') {
+                    actionUrl = `/dashboard/admin/pembelajaran/class/s/${id}`;
+                } else {
+                    actionUrl = `/dashboard/admin/users/${entity}/s/${id}`;
+                }
+
+                deleteForm.action = actionUrl;
+                console.log(`Set delete form action for ${entity}:`, actionUrl);
             });
         }
 

@@ -157,14 +157,12 @@ class ClassController extends Controller
      */
     private function processSelectedStudents(Classes $class, array $selectedStudents)
     {
-
         foreach ($selectedStudents as $studentData) {
-            // Cek apakah user sudah ada berdasarkan id
-            $student = Student::where('id', $studentData['id'])->first();
-            $user = User::where('id', $student['user_id'])->first();
+            // Cari user berdasarkan email
+            $user = User::where('email', $studentData['email'])->first();
 
             if (!$user) {
-                // Jika belum ada, buat user baru dengan role 'student' dan password dari nis
+                // Jika user belum ada, buat user baru
                 $user = User::create([
                     'name'     => $studentData['name'],
                     'email'    => $studentData['email'],
@@ -172,24 +170,34 @@ class ClassController extends Controller
                     'role'     => 'student',
                 ]);
 
-                $studentRecord = Student::create([
-                    'user_id' => $user->id,
-                    'NIS'     => $studentData['nis'],
+                // Buat student baru
+                $student = Student::create([
+                    'user_id'     => $user->id,
+                    'NIS'         => $studentData['nis'],
+                    'institution' => $studentData['institution'] ?? null,
+                    'address'     => $studentData['address'] ?? null,
                 ]);
             } else {
-                // Pastikan record student ada
-                $studentRecord = Student::firstOrCreate(
-                    ['user_id' => $user->id],
-                    ['NIS' => $studentData['nis']]
-                );
+                // Jika user sudah ada, update data user (opsional)
+                $user->update([
+                    'name' => $studentData['name'],
+                ]);
+
+                // Cek student berdasarkan user_id
+                $student = Student::firstOrNew(['user_id' => $user->id]);
+                $student->NIS = $studentData['nis'];
+                $student->institution = $studentData['institution'] ?? null;
+                $student->address = $studentData['address'] ?? null;
+                $student->save();
             }
 
-            // Hubungkan student ke kelas (jika belum terhubung)
-            if (!$class->students()->where('student_id', $studentRecord->id)->exists()) {
-                $class->students()->attach($studentRecord->id);
+            // Hubungkan ke kelas jika belum ada
+            if (!$class->students()->where('student_id', $student->id)->exists()) {
+                $class->students()->attach($student->id);
             }
         }
     }
+
 
     /**
      * Display the specified resource.

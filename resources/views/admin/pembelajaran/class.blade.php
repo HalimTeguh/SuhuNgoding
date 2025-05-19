@@ -79,10 +79,6 @@
 
 @include('admin.pembelajaran.partials.createClassesModal')
 @include('admin.pembelajaran.partials.inviteStudentModal')
-{{-- @include('admin.users.modal.editStudentCanvas') --}}
-
-
-
-
+@include('admin.pembelajaran.partials.deleteClassesModal')
 
 @endsection
