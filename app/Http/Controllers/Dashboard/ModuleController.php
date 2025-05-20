@@ -37,7 +37,7 @@ class ModuleController extends Controller
             ->whereNull('deleted_at')
             ->get();
 
-        return view('admin.pembelajaran.module', [
+        return view('admin.pembelajaran.module.module', [
             'modules' => $modules,
             'teachers' => $teachers,
             'activeMenu' => 'module'
@@ -171,7 +171,7 @@ class ModuleController extends Controller
             ->whereNull('deleted_at')
             ->get();
 
-        return view('admin.pembelajaran.detailModule', [
+        return view('admin.pembelajaran.module.detailModule', [
             'module' => $module,
             'contents' => $contents,
             'allTeacher' => $allTeachers,
