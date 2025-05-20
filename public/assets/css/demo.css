@@ -543,6 +543,11 @@
   100% { transform: rotate(360deg); }
 }
 
+.invite-student-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
 .selectable-card {
     cursor: pointer;
     transition: all 0.2s ease;

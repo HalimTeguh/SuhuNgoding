@@ -71,6 +71,9 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('/dashboard/admin/pembelajaran/class', ClassController::class);
         Route::put('/dashboard/admin/pembelajaran/class/s/{class}', [ClassController::class, 'softDelete'])->name('dashboard.class.softDelete');
         Route::post('/dashboard/admin/pembelajaran/class/{class}/attach-modules', [ClassController::class, 'attachModules'])->name('dashboard.class.attachModule');
+        Route::delete('/dashboard/admin/pembelajaran/class/{class}/modules/{module}', [ClassController::class, 'detachModule'])->name('dashboard.class.detachModule');
+        Route::post('/dashboard/admin/pembelajaran/class/{class}/attach-student', [ClassController::class, 'attachStudent'])->name('dashboard.class.attachStudent');
+        Route::delete('/dashboard/admin/pembelajaran/class/{class}/students/{student}', [ClassController::class, 'detachStudent'])->name('dashboard.class.detachStudent');
 
         Route::resource('/dashboard/admin/pembelajaran/module', ModuleController::class);
         Route::put('/dashboard/admin/pembelajaran/module/{module}/uploadImage', [ModuleController::class, 'uploadImage'])->name('dashboard.module.uploadImage');

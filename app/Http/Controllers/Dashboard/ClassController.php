@@ -29,18 +29,18 @@ class ClassController extends Controller
         $classes = Classes::whereNull('deleted_at')
             ->get();
 
-        $teachers = User::where('role', 'teacher')
+        $allTeachers = User::where('role', 'teacher')
             ->whereNull('deleted_at')
             ->get();
 
-        $students = User::leftJoin('students', 'users.id', '=', 'students.user_id')
+        $allStudents = User::leftJoin('students', 'users.id', '=', 'students.user_id')
             ->where('role', 'student')
             ->get();
 
-        return view('admin.pembelajaran.class', [
+        return view('admin.pembelajaran.class.class', [
             'classes' => $classes,
-            'teachers' => $teachers,
-            'students' => $students,
+            'allTeachers' => $allTeachers,
+            'allStudents' => $allStudents,
             'activeMenu' => 'classes'
         ]);
     }
@@ -212,6 +212,10 @@ class ClassController extends Controller
             ->whereNull('deleted_at')
             ->get();
 
+        $allStudents = User::leftJoin('students', 'users.id', '=', 'students.user_id')
+            ->where('role', 'student')
+            ->get();
+
         $availableModules = Module::with('teacher.user')
             ->whereNull('deleted_at')
             ->where(function ($query) {
@@ -234,10 +238,11 @@ class ClassController extends Controller
             })
             ->get();
 
-        return view('admin.pembelajaran.detailClass', [
+        return view('admin.pembelajaran.class.detailClass', [
             'class' => $class,
             'teacher' => $class->teacher,
             'allTeacher' => $allTeachers,
+            'allStudents' => $allStudents,
             'students' => $class->students,
             'availableModules' => $availableModules,
             'activeMenu' => 'classes'
@@ -258,6 +263,63 @@ class ClassController extends Controller
                 'type' => 'success',
                 'title' => 'Modules Added',
                 'message' => 'Modules successfully attached to the class.',
+                'time' => now()->diffForHumans()
+            ]
+        ]);
+    }
+
+    public function detachModule(Classes $class, Module $module)
+    {
+        $class->modules()->detach($module->id);
+
+        // (Opsional) Hapus progress siswa terkait module + class
+        // DB::table('module_progress')->where(...)->delete();
+
+        return back()->with('toasts', [
+            [
+                'type' => 'success',
+                'title' => 'Module Removed',
+                'message' => "Module {$module->title} has been removed from the class.",
+                'time' => now()->diffForHumans()
+            ]
+        ]);
+    }
+
+    public function attachStudent(Request $request, Classes $class)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:students,id'
+        ]);
+
+        $studentId = $request->student_id;
+
+        if (!$class->students()->where('student_id', $studentId)->exists()) {
+            $class->students()->attach($studentId);
+        }
+
+        return redirect()->back()->with('toasts', [
+            [
+                'type' => 'success',
+                'title' => 'Student Added',
+                'message' => 'Student successfully added to the class.',
+                'time' => now()->diffForHumans()
+            ]
+        ]);
+    }
+
+
+    public function detachStudent(Classes $class, Student $student)
+    {
+        $class->students()->detach($student->id);
+
+        // (Opsional) Hapus progress siswa terkait module + class
+        // DB::table('module_progress')->where(...)->delete();
+
+        return back()->with('toasts', [
+            [
+                'type' => 'success',
+                'title' => 'Student Removed',
+                'message' => "Student {$student->user->name} has been removed from the class.",
                 'time' => now()->diffForHumans()
             ]
         ]);

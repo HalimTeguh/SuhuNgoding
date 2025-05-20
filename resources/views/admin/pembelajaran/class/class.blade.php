@@ -77,8 +77,8 @@
 
 <!-- Content wrapper -->
 
-@include('admin.pembelajaran.partials.createClassesModal')
-@include('admin.pembelajaran.partials.inviteStudentModal')
-@include('admin.pembelajaran.partials.deleteClassesModal')
+@include('admin.pembelajaran.class.partials.createClassesModal')
+@include('admin.pembelajaran.class.partials.inviteStudentModal')
+@include('admin.pembelajaran.class.partials.deleteClassesModal')
 
 @endsection

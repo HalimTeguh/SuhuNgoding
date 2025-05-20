@@ -101,7 +101,6 @@
       <!-- Layout container -->
       <div class="layout-page">
 
-        @stack('datatables')
         <!-- Navbar -->
         @include('partials.header')
         <!-- / Navbar -->
@@ -176,9 +175,21 @@
   <!-- Place this tag before closing body tag for github widget button. -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
 
-  <script>
-    
+  {{-- jQuery (harus sebelum datatables) --}}
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+  {{-- DataTables CSS --}}
+  <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+
+  <!-- DataTables with Bootstrap 5 -->
+  {{-- <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css"> --}}
+  {{-- <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script> --}}
+
+  {{-- DataTables JS --}}
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+
+  <script>
     document.addEventListener("DOMContentLoaded", function() {
         // Ambil entity dari header dengan ID khusus
         var entity = document.getElementById("entityHeader").textContent.toLowerCase().trim();
