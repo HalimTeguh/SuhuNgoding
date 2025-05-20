@@ -177,19 +177,14 @@
   <script async defer src="https://buttons.github.io/buttons.js"></script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        setDeleteModal('class');
-        setDeleteModal('student');
-        setDeleteModal('teacher');
-        // Tambahkan lainnya jika ada
-    });
+    
 
     document.addEventListener("DOMContentLoaded", function() {
         // Ambil entity dari header dengan ID khusus
         var entity = document.getElementById("entityHeader").textContent.toLowerCase().trim();
         var formError = "{{ session('form_error') ?? '' }}";
         var entityId = "{{ session('entity_id') ?? '' }}";
-
+1
         // Function: Load data for admin or teacher
         function loadData(entity, id) {
             fetch(`/dashboard/admin/users/${entity}/${id}/edit`)
@@ -273,8 +268,13 @@
             });
         }
 
-        // Set delete modal
-        setDeleteModal(entity);
+        document.addEventListener('DOMContentLoaded', function () {
+            setDeleteModal('class');
+            setDeleteModal('student');
+            setDeleteModal('teacher');
+            // Tambahkan lainnya jika ada
+        });
+        
 
         // Edit button click
         document.querySelectorAll(`.edit-${entity}-btn`).forEach(function(btn) {

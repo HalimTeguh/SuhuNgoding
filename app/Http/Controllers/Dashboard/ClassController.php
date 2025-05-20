@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Classes;
+use App\Models\Module;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -205,10 +206,32 @@ class ClassController extends Controller
     public function show(string $id)
     {
         //
-        $class = Classes::with(['teacher.user', 'students.user'])->findOrFail($id);
+        $class = Classes::with(['teacher.user', 'students.user', 'modules.teacher.user'])->findOrFail($id);
 
         $allTeachers = User::where('role', 'teacher')
             ->whereNull('deleted_at')
+            ->get();
+
+        $availableModules = Module::with('teacher.user')
+            ->whereNull('deleted_at')
+            ->where(function ($query) {
+                $user = auth()->user();
+
+                if ($user->role === 'teacher') {
+                    // Public atau Private milik teacher tersebut
+                    $query->where('status', 1)
+                        ->orWhere(function ($q) use ($user) {
+                            $q->where('status', 2)
+                                ->where('teacher_id', $user->teacher->id);
+                        });
+                } elseif ($user->role === 'admin') {
+                    // Public dan semua Private
+                    $query->whereIn('status', [1, 2]);
+                } else {
+                    // Jika role lain, misalnya student: hanya lihat public
+                    $query->where('status', 1);
+                }
+            })
             ->get();
 
         return view('admin.pembelajaran.detailClass', [
@@ -216,7 +239,27 @@ class ClassController extends Controller
             'teacher' => $class->teacher,
             'allTeacher' => $allTeachers,
             'students' => $class->students,
+            'availableModules' => $availableModules,
             'activeMenu' => 'classes'
+        ]);
+    }
+
+    public function attachModules(Request $request, Classes $class)
+    {
+        $validated = $request->validate([
+            'module_ids' => 'required|array',
+            'module_ids.*' => 'exists:modules,id',
+        ]);
+
+        $class->modules()->syncWithoutDetaching($validated['module_ids']);
+
+        return redirect()->back()->with('toasts', [
+            [
+                'type' => 'success',
+                'title' => 'Modules Added',
+                'message' => 'Modules successfully attached to the class.',
+                'time' => now()->diffForHumans()
+            ]
         ]);
     }
 

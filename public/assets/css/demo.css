@@ -542,3 +542,15 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.selectable-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.selectable-card.active {
+    border: 2px solid #0d6efd;
+    box-shadow: 0 0 15px rgba(13, 110, 253, 0.5);
+    transform: scale(1.01);
+}

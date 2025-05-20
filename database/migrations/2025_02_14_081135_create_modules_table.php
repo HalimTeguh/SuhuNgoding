@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('teacher_id')->constrained('teachers')->onDelete('cascade');
             $table->string('title');
-            $table->integer('status');
+            $table->integer('status'); // 0 pending, 1 public, 2 private
             $table->string('image')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();
