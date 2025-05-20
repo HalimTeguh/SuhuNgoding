@@ -1,6 +1,6 @@
 <!-- Modal Add Student -->
-<div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal">
+<div class="modal fade" id="addStudentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-m">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="addStudentModalLabel">Invite Student</h5>
@@ -12,7 +12,7 @@
                 <div id="studentSearchResults">
                     <!-- Placeholder for dynamic student search results -->
                     <div id="studentListModal" class="invite-student-list">
-                        @foreach ($students as $student)
+                        @foreach ($allStudents as $student)
                         <div class="student-card d-flex align-items-center justify-content-between px-3 py-2 mb-1 border rounded d-none"
                             data-id="{{ $student->id }}" data-name="{{ $student->name }}"
                             data-email="{{ $student->email }}" data-nis="{{ $student->NIS }}">
@@ -42,19 +42,32 @@
     const searchInput = document.getElementById('searchStudentModal');
     const studentCards = document.querySelectorAll('#studentListModal .student-card');
     let selectedCard = null;
+    let callerSource = null;
+
 
     document.addEventListener('DOMContentLoaded', function () {
+
+        const addStudentModal = document.getElementById('addStudentModal');
+
         
         // Fungsi pencarian
         searchInput.addEventListener('input', function () {
-            const searchValue = this.value.toLowerCase();
+            const searchValue = this.value.trim().toLowerCase();
+
+            // Jangan tampilkan apa pun jika input kosong atau hanya simbol seperti "@"
+            if (searchValue.length < 3 || /^[^a-zA-Z0-9]+$/.test(searchValue)) {
+                studentCards.forEach(card => card.classList.add('d-none'));
+                return;
+            }
 
             studentCards.forEach(studentCard => {
                 const studentEmail = studentCard.getAttribute('data-email').toLowerCase();
                 const studentNis = studentCard.getAttribute('data-nis').toLowerCase();
 
-                // Tampilkan card jika cocok, sembunyikan jika tidak cocok
-                if (searchValue !== '' && (studentEmail.includes(searchValue) || studentNis.includes(searchValue))) {
+                if (
+                    studentEmail.includes(searchValue) ||
+                    studentNis.includes(searchValue)
+                ) {
                     studentCard.classList.remove('d-none');
                 } else {
                     studentCard.classList.add('d-none');
@@ -119,52 +132,40 @@
             });
         });
 
+        addStudentModal.addEventListener('show.bs.modal', function (event) {
+            console.log("Modal Invite Student opened");
+            const button = event.relatedTarget;
+            callerSource = button?.getAttribute('data-caller');
+
+            if (callerSource === 'createClass') {
+                const createModal = bootstrap.Modal.getInstance(document.getElementById('createClass'));
+                createModal?.hide();
+            }
+        });
+
+        addStudentModal.addEventListener('hidden.bs.modal', function () {
+            
+            if (callerSource === 'createClass') {
+                const createModalEl = document.getElementById('createClass');
+                console.log("Modal Invite Student closed");
+                console.log(createModalEl);
+                const createModal = bootstrap.Modal.getOrCreateInstance(createModalEl);
+                createModal.show();
+            }
+            callerSource = null; // Reset
+        });
+
     });
 
-    // Fungsi selectStudent untuk menyimpan data yang dipilih
-    function inviteStudent() {
-        console.log('invite');
-        // Menyimpan data ke variable selectedStudents
-        if (student) { // Pastikan ada student yang dipilih
-            selectedStudents.push(student); // Menambahkan student ke dalam array selectedStudents
-            console.log(selectedStudents);
-            document.getElementById('inviteButton').disabled = true; // Nonaktifkan tombol setelah dipilih
-            student = null;
-        }
-
-
-        // Menutup modal InvitedStudentModal
-        closeInviteStudentModal();
-
-
-
-    }
-
-    
-
     function closeInviteStudentModal() {
-        // Ambil elemen modal
-        const modalElement = document.getElementById("addStudentModal");
-
-        // Buat instance modal menggunakan Bootstrap Modal API
-        const modalInstance = bootstrap.Modal.getInstance(modalElement);
-
-        // Jika instance modal ada, tutup modal
-        if (modalInstance) {
-            modalInstance.hide();
-        } else {
-            // Jika modal belum di-inisialisasi, buat instance dan tutup
-            const newModalInstance = new bootstrap.Modal(modalElement);
-            newModalInstance.hide();
-        }
-
+        // Reset input
         searchInput.value = '';
         student = null;
 
-            
+        const createModal = bootstrap.Modal.getInstance(document.getElementById('addStudentModal'));
+        createModal?.hide();
+
         resetInviteStudentModal();
-                    // Membuka modal CreateClass
-        openCreateClassModal();
         renderStudentList();
 
         console.log("Modal Invite Student closed");
@@ -191,6 +192,4 @@
 
         console.log("Modal Invite Student reset");
     }
-
-
 </script>

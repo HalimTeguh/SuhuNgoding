@@ -23,9 +23,9 @@
                     </ul>
                 </div>
 
-                @include('admin.pembelajaran.pages.basicModuleSection')
-                @include('admin.pembelajaran.pages.contentModuleSection')
-                @include('admin.pembelajaran.pages.quizModuleSection')
+                @include('admin.pembelajaran.module.pages.basicModuleSection')
+                @include('admin.pembelajaran.module.pages.contentModuleSection')
+                @include('admin.pembelajaran.module.pages.quizModuleSection')
 
                 <div class="card deleteSection">
                     <h5 class="card-header">Delete Account</h5>

@@ -23,7 +23,7 @@
         </div>
     </div>
 </div>
-{{-- 
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const deleteClassModal = document.getElementById('deleteClass');
@@ -41,4 +41,4 @@
             console.log("Form action set to:", form.action);
         });
     });
-</script> --}}
+</script>

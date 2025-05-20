@@ -162,7 +162,7 @@
 
 <!-- Content wrapper -->
 
-@include('admin.pembelajaran.partials.createModuleModal')
+@include('admin.pembelajaran.module.partials.createModuleModal')
 
 
 @endsection

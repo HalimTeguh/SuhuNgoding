@@ -25,6 +25,8 @@ class Classes extends Model
 
     public function modules()
     {
-        return $this->belongsToMany(Module::class, 'class_module');
+        return $this->belongsToMany(Module::class, 'class_module', 'class_id', 'module_id');
     }
+
+    
 }

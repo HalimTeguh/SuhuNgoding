@@ -122,7 +122,7 @@
                                     <select class="form-select py-3" id="teacherCreate" name="teacherCreate">
                                         <option value="" selected class="text-secondary"> Select teacher of the class
                                         </option>
-                                        @foreach($teachers as $key => $teacher)
+                                        @foreach($allTeachers as $key => $teacher)
                                         <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
                                         @endforeach
                                     </select>
@@ -140,7 +140,7 @@
                                         <input type="text" class="form-control flex-grow-1" id="searchStudent"
                                             placeholder="Search student">
                                         <button type="button" class="btn btn-primary ms-2 py-3"
-                                            style="white-space: nowrap;" data-bs-toggle="modal"
+                                            style="white-space: nowrap;" data-bs-toggle="modal" data-caller="createClass"
                                             data-bs-target="#addStudentModal">Invite Student</button>
                                     </div>
 
@@ -222,6 +222,7 @@
 <script>
     let nameClass = null;
     let descClass = null;
+    
     let selectedStudents = [];
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -230,6 +231,9 @@
 
         nameClass = document.getElementsByClassName('nameCreate');
         descClass = document.getElementsByClassName('descriptionCreate');
+
+
+        
 
     });
 
@@ -336,7 +340,7 @@
                     <div class="d-flex flex-column align-items-center justify-content-center" style="height: 100%;">
                         <i class="fa-solid fa-users fa-3x mb-3 text-muted"></i>
                         <span class="text-muted">You haven't invited any students yet</span>
-                        <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addStudentModal">Invite Student</button>
+                        <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addStudentModal" data-caller="createClass">Invite Student</button>
                     </div>
                 </div>
             `;
@@ -346,7 +350,7 @@
                     <input type="text" class="form-control flex-grow-1" id="searchStudent"
                         placeholder="Search student">
                     <button type="button" class="btn btn-primary ms-2 py-3" style="white-space: nowrap;"
-                        data-bs-toggle="modal" data-bs-target="#addStudentModal">Invite Student</button>
+                        data-bs-toggle="modal" data-bs-target="#addStudentModal" data-caller="createClass">Invite Student</button>
                 </div>
                 <div id="studentList" class="student-list"></div>
             `;
@@ -369,6 +373,34 @@
             });
         }
         updateSelectedStudentsInput();
+
+        const searchInput = document.getElementById('searchStudent');
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                const keyword = this.value.toLowerCase();
+                const filtered = selectedStudents.filter(s =>
+                    (s.name && s.name.toLowerCase().includes(keyword)) ||
+                    (s.NIS && s.NIS.toLowerCase().includes(keyword)) ||
+                    (s.email && s.email.toLowerCase().includes(keyword))
+                );
+
+                const studentListElement = document.getElementById("studentList");
+                studentListElement.innerHTML = ''; // Kosongkan ulang
+
+                filtered.forEach(student => {
+                    const studentCard = document.createElement("div");
+                    studentCard.className = "student-card d-flex align-items-center justify-content-between px-5 py-3 mb-1 border rounded";
+                    studentCard.innerHTML = `
+                        <div>
+                            <strong>${student.name}</strong><br>
+                            ${student.nis} - ${student.email}
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeStudent('${student.id}')">X</button>
+                    `;
+                    studentListElement.appendChild(studentCard);
+                });
+            });
+        }
     }
 
 
@@ -402,6 +434,20 @@
         if (isValid) {
             updateStep3Preview();
             stepperForm.next();
+        }
+    }
+
+    function inviteStudent() {
+        if (student) {
+            // Tambahkan ke selectedStudents hanya jika belum ada
+            const alreadyExists = selectedStudents.some(s => s.id == student.id);
+            if (!alreadyExists) {
+                selectedStudents.push(student);
+            }
+
+            renderStudentList(); // panggil fungsi render ulang list
+            closeInviteStudentModal(); // tutup modal
+            openCreateClassModal();
         }
     }
 

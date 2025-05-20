@@ -14,7 +14,7 @@ class Module extends Model
 
     public function classes()
     {
-        return $this->belongsToMany(Classes::class, 'class_module');
+        return $this->belongsToMany(Classes::class, 'class_module', 'module_id', 'class_id');
     }
 
     public function contents()
