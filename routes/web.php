@@ -13,6 +13,7 @@ use App\Http\Controllers\Dashboard\StudentController;
 use App\Http\Controllers\Dashboard\TeacherController;
 use App\Http\Controllers\ExceptionPageController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ModuleContentController;
 use App\Models\Admin;
 use App\Models\Classes;
@@ -29,7 +30,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
+Route::get('/', [LandingController::class, 'index']);
 
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
