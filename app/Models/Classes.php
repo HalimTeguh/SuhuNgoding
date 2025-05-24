@@ -28,5 +28,8 @@ class Classes extends Model
         return $this->belongsToMany(Module::class, 'class_module', 'class_id', 'module_id');
     }
 
-    
+    public function leaderboards()
+    {
+        return $this->hasMany(Leaderboard::class, 'class_id');
+    }
 }

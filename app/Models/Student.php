@@ -25,6 +25,11 @@ class Student extends User
 
     public function classes()
     {
-        return $this->belongsToMany(Classes::class, 'class_student');
+        return $this->belongsToMany(Classes::class, 'class_student', 'student_id', 'class_id');
+    }
+
+    public function leaderboards()
+    {
+        return $this->hasMany(Leaderboard::class, 'student_id');
     }
 }

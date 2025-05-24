@@ -26,4 +26,9 @@ class Module extends Model
     {
         return $this->belongsTo(Teacher::class, 'teacher_id');
     }
+
+    public function leaderboards()
+    {
+        return $this->hasMany(Leaderboard::class, 'module_id');
+    }
 }

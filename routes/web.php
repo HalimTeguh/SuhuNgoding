@@ -15,6 +15,7 @@ use App\Http\Controllers\ExceptionPageController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ModuleContentController;
+use App\Http\Controllers\StudentClassController;
 use App\Models\Admin;
 use App\Models\Classes;
 use Illuminate\Support\Facades\Route;
@@ -55,8 +56,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/download/template-student', [FileController::class, 'downloadTemplateStudentExcel'])->name('download.template.student');
 
-    Route::middleware('role:admin')->group(function () {
 
+
+    // ROLE => ADMIN
+    Route::middleware('role:admin')->group(function () {
 
         Route::get('/dashboard/admin', [DashboardController::class, 'admin'])->name('dashboard.admin');
 
@@ -90,6 +93,17 @@ Route::middleware(['auth'])->group(function () {
 
 
         // Route::post('/convert-pdf', [ModuleQuizController::class, 'convertPdf']);
+
+    });
+
+
+    // ROLE => STUDENT
+    Route::middleware('role:student')->group(function () {
+
+        Route::get('/dashboard/student', [DashboardController::class, 'student'])->name('dashboard.student');
+        Route::get('/dashboard/student/class/', [StudentClassController::class, 'index'])->name('dashboard.student.class');
+        Route::get('/dashboard/student/class/{classid}', [StudentClassController::class, 'show'])->name('dashboard.student.class.show');
+
 
     });
 

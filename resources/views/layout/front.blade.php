@@ -96,8 +96,6 @@
                                 stroke-linejoin="round" id="NavbarBrandIcon" />
                         </svg>
 
-
-
                     </a>
                 </div>
                 <div class="flex w-full items-center justify-between px-5">
