@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Classes;
 use App\Models\Leaderboard;
+use App\Models\ModuleContent;
+use App\Models\StudentModulSummary;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -75,24 +77,75 @@ class StudentClassController extends Controller
      */
     public function show(string $id)
     {
-        //
-        $user = User::findOrFail($id);
-        
-        $class = Classes::findOrFail($id);
+        $class = Classes::with(['modules.contents'])->findOrFail($id); // langsung eager load modules dan contents
 
-        $leaderboard = Leaderboard::where('class_id', $class->id)->get();
+        $leaderboard = Leaderboard::with('student.user')
+            ->where('class_id', $class->id)
+            ->orderByDesc('point')
+            ->get();
 
-        $modules = $class->modules()->get();
+        $student = auth()->user()->student;
+
+        // Ambil hanya modules dari kelas ini yang dimiliki student (optional filter)
+        $modules = $class->modules;
+
+        foreach ($modules as $module) {
+            foreach ($module->contents as $content) {
+                // Contoh progres dummy
+                $content->progress_status = "belum";
+            }
+        }
 
         return view('student.class.detailClass', [
-            'user' => $user,
+            'user' => $student,
             'class' => $class,
             'modules' => $modules,
             'leaderboard' => $leaderboard,
             'activeMenu' => 'class'
         ]);
-        
     }
+
+    public function showContent(string $id)
+    {
+        $student = auth()->user()->student;
+        $moduleContent = ModuleContent::findOrFail($id); // langsung eager load modules dan contents
+        $listContent = ModuleContent::where('module_id', $moduleContent->module_id)->get();
+
+        return view('student.class.moduleContent', [
+            'user' => $student,
+            'listContent' => $listContent,
+            'moduleContent' => $moduleContent,
+            'activeMenu' => 'class'
+        ]);
+    }
+
+    public function saveDurationStudyContent(Request $request)
+    {
+        $request->validate([
+            'module_content_id' => 'required|exists:module_contents,id',
+            'duration' => 'required|integer|min:1'
+        ]);
+
+        $student = auth()->user()->student;
+
+        $summary = StudentModulSummary::firstOrNew([
+            'student_id' => $student->id,
+            'content_id' => $request->module_content_id,
+        ]);
+
+        $summary->study_content_total_duration += $request->duration;
+        $summary->save();
+
+        return response()->with('toasts', [
+            [
+                'type' => 'success',  // Jenis toast
+                'title' => 'Data tersimpan',  // Judul toast
+                'message' => 'Durasi belajar berhasil disimpan',  // Pesan toast
+                'time' => now()->diffForHumans()  // Waktu toast
+            ]
+        ]);
+    }
+
 
     /**
      * Show the form for editing the specified resource.

@@ -102,7 +102,10 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/dashboard/student', [DashboardController::class, 'student'])->name('dashboard.student');
         Route::get('/dashboard/student/class/', [StudentClassController::class, 'index'])->name('dashboard.student.class');
-        Route::get('/dashboard/student/class/{classid}', [StudentClassController::class, 'show'])->name('dashboard.student.class.show');
+        Route::get('/dashboard/student/class/{classId}', [StudentClassController::class, 'show'])->name('dashboard.student.class.show');
+
+        Route::get('/dashboard/student/module/{moduleId}', [StudentClassController::class, 'showContent'])->name('dashboard.student.module.');
+        Route::post('/dashboard/student/save-duration/content/', [StudentClassController::class, 'saveDurationStudyContent'])->name('dashboard.student.module.saveDurationStudyContent');
 
 
     });
