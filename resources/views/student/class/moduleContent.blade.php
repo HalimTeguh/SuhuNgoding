@@ -38,8 +38,8 @@
                                     <span id="durationDisplay"
                                         class="badge bg-white text-primary fw-semibold px-3 py-2">
                                         00:00
+                                        @csrf
                                     </span>
-                                    @csrf
                                     <input type="hidden" name="module_content_id" value="{{ $moduleContent->id }}">
                                     <input type="hidden" name="duration" id="durationInput">
 
@@ -50,9 +50,10 @@
                                     class="card-body d-flex flex-column justify-content-center align-items-center text-center">
                                     <p class="my-4">Sudah selesai membaca materi ini? Lanjut ke quiz untuk menguji
                                         pemahamanmu.</p>
-                                    <button type="submit" class="btn btn-outline-primary btn-m px-4">
+                                    <a href="/dashboard/student/class/{{ $class->id }}/module/{{ $moduleContent->id }}/quiz/"
+                                        class="btn btn-outline-primary btn-m px-4">
                                         Mulai Quiz <i class="bx bx-chevron-right ms-2"></i>
-                                    </button>
+                                    </a>
                                 </div>
                             </form>
                         </div>
@@ -96,7 +97,7 @@
                                         @forelse($listContent as $content)
                                         <li class="list-group-item list-group-item-action px-4 py-3
                             @if($moduleContent->id == $content->id) bg-label-primary disabled @endif">
-                                            <a href="/dashboard/student/module/{{ $content->id }}"
+                                            <a href="/dashboard/student/class/{{ $class->id }}/module/{{ $content->id }}"
                                                 class="d-flex justify-content-between align-items-center text-dark text-decoration-none hover-effect">
                                                 <span>{{ $content->title }}</span>
                                                 <i class="bx bx-chevron-right fs-4 text-muted"></i>
@@ -168,7 +169,6 @@
     async function loadPyodideEnv() {
         pyodide = await loadPyodide();
     }
-
     
     document.addEventListener("DOMContentLoaded", () => {
 
@@ -182,7 +182,6 @@
             autoCloseBrackets: true,
             matchBrackets: true
         });
-        
 
         const readingStartTime = Date.now();
         const moduleContentId = {{ $moduleContent->id }};
@@ -229,7 +228,7 @@
                 new Blob([
                     new URLSearchParams({
                         module_content_id: moduleContentId,
-                        duration: duration,
+                        duration: getReadingDurationInSeconds(), // send as integer
                         _token: "{{ csrf_token() }}"
                     })
                 ], { type: "application/x-www-form-urlencoded" })
@@ -273,7 +272,6 @@
             output.innerText += `❌ Exception: ${err}`;
         }
     }
-
 
 </script>
 

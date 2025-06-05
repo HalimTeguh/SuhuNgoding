@@ -16,46 +16,51 @@ class AiController extends Controller
 
         $materi = $request->input('materi');
 
+        // Prompt dengan Heredoc
         $prompt = <<<PROMPT
 Kamu adalah seorang guru profesional yang berfokus pada pengajaran materi pemrograman untuk tingkat Sekolah Menengah Atas (SMA). Tugasmu adalah membuat soal latihan berbasis JSON sesuai materi yang diberikan.
 
-Setiap materi harus memiliki **10 soal latihan**, terdiri dari 5 level Taksonomi Bloom berikut:
-
+**Buat 10 soal** yang mencakup kelima level Taksonomi Bloom berikut:
 1. **Mengingat (Remember)** – 2 soal
 2. **Memahami (Understand)** – 2 soal
 3. **Menerapkan (Apply)** – 2 soal
 4. **Menganalisis (Analyze)** – 2 soal
 5. **Mengevaluasi (Evaluate)** – 2 soal
 
-### 🔹 Format Soal:
+###  Format Soal:
+- **Remember, Understand, Analyze, Evaluate** ➔ **pilihan ganda (multiple choice)** dengan **4 opsi jawaban** (termasuk satu jawaban benar dan tiga jawaban salah).  
+  Setiap opsi memiliki:
+  - `answer`: teks jawaban
+  - `feedback`: penjelasan benar/salah
+  - `is_correct`: true/false
+  
+- **Apply** ➔ soal studi kasus kode dengan:
+  - `reference_code`: potongan kode yang relevan
+  - `output`: arahan langkah-langkah yang jelas (misalnya: buat variabel, gunakan print(), dsb). **Tidak perlu field feedback**.
+  - **Catatan:** gunakan data dummy dari variabel, jangan gunakan fungsi input().
 
-- **Level Remember, Understand, Analyze, Evaluate**: berbentuk **pilihan ganda** (multiple choice, 4 opsi)
-- **Level Apply**: berbentuk **studi kasus kode** yang membutuhkan **referensi kode dan penjelasan output**
+- **Evaluate** ➔ pertanyaan pilihan ganda untuk menilai kode program:
+  - WAJIB sertakan `reference_code` jika menilai kode.
+  - Sertakan **4 opsi jawaban** dengan satu jawaban benar.
 
-### 🔹 Assessment Terms per Level (wajib dijadikan dasar menyusun pertanyaan):
+###  Assessment Terms per Level (wajib digunakan untuk membuat soal):
+- **Remember**:
+  - Mengidentifikasi, Mengenali implementasi, Mengingat konsep materi dan bagian kode yang dipelajari
+- **Understand**:
+  - Memahami, Menerjemahkan, dan Menjelaskan konsep algoritma tertentu
+- **Apply**:
+  - Mengimplementasikan konsep yang dipelajari dan Menyelesaikan studi kasus sederhana
+- **Analyze**:
+  - Memecah tugas program menjadi beberapa komponen
+  - Mengidentifikasi komponen penting dan yang tidak penting
+- **Evaluate**:
+  - Menentukan apakah sebuah kode dapat menyelesaikan studi kasus tertentu
+  - Menilai kualitas dan standar kode dengan benar
 
-- **Remember**
-    - Mengidentifikasi bagian kode
-    - Mengenali implementasi konsep
-    - Mengenali deskripsi yang sesuai
-    - Mengingat materi yang dipelajari
-- **Understand**
-    - Menerjemahkan algoritma tertentu
-    - Menjelaskan konsep algoritma
-    - Memahami contoh konsep atau algoritma
-- **Apply**
-    - Mengimplementasikan konsep yang dipelajari
-    - Menyelesaikan studi kasus sederhana
-- **Analyze**
-    - Memecah tugas program menjadi beberapa komponen
-    - Mengidentifikasi komponen penting dan yang tidak penting
-- **Evaluate**
-    - Menentukan apakah sebuah kode dapat menyelesaikan studi kasus tertentu
-    - Menilai kualitas dan standar kode dengan benar
+###  Format Output JSON:
+Berikan jawaban **langsung dalam format JSON array** (bahasa Indonesia), **tanpa narasi pembuka**, dan **langsung mulai dengan tanda kurung siku** (`[`).
 
-Berikan jawaban langsung dalam format JSON array, **tanpa narasi pembuka**, dan mulai dengan tanda kurung siku.
-
-Contoh Format Output JSON (berbahasa Indonesia):
+Contoh:
 [
   {
     "level": "Memahami",
@@ -67,77 +72,44 @@ Contoh Format Output JSON (berbahasa Indonesia):
         "is_correct": true
       },
       {
-        "answer": "Hanya simbol matematika dalam kode",
-        "feedback": "Salah, itu hanya operator bukan ekspresi.",
+        "answer": "Variabel yang menyimpan nilai",
+        "feedback": "Salah, karena ekspresi tidak hanya menyimpan nilai.",
         "is_correct": false
       },
-      ...
     ]
   },
   {
     "level": "Menerapkan",
-    "question": "Berikut adalah potongan kode. Apa output dari kode berikut?",
-    "reference_code": "x = 3 + 4 * 2\\nprint(x)",
-    "output": "11",
-    "feedback": "Operator * memiliki prioritas lebih tinggi dari +, sehingga 4 * 2 = 8, lalu 3 + 8 = 11."
+    "question": "Tulislah program Python untuk menentukan apakah sebuah angka adalah ganjil atau genap.",
+    "reference_code": "def cek_ganjil_genap(angka):\n    if angka % 2 == 0:\n        return \"Genap\"\n    else:\n        return \"Ganjil\"\n\nprint(cek_ganjil_genap(10))",
+    "output": "Arahan: \n- Buat fungsi cek_ganjil_genap yang menerima satu parameter angka.\n- Gunakan percabangan if-else untuk menentukan ganjil atau genap.\n- Tampilkan hasil menggunakan print()."
   }
 ]
 
-
 Gunakan materi berikut sebagai dasar penyusunan soal:
-
 $materi
 PROMPT;
 
+        $promptJson = json_encode($prompt, JSON_UNESCAPED_UNICODE);
         try {
-            $response = Http::withToken(env('HUGGINGFACE_API_TOKEN'))
-                ->timeout(60)
-                ->post('https://router.huggingface.co/together/v1/chat/completions', [
-                    'model' => 'meta-llama/Llama-3.3-70B-Instruct-Turbo',
-                    'messages' => [
-                        [
-                            'role' => 'user',
-                            'content' => $prompt
-                        ]
-                    ],
-                    'temperature' => 0.3,
-                    'top_p' => 0.85,
-                    'max_tokens' => 3072
+            $response = Http::timeout(90)
+                ->post('https://iswara-code-evaluation-system.onrender.com/askLlama', [
+                    'prompt' => $promptJson
                 ]);
 
             if ($response->failed()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Model gagal merespons.'
+                    'message' => 'Gagal menghubungi AI service.'
                 ], 500);
             }
 
-            $jsonText = $response->json()['choices'][0]['message']['content'] ?? null;
-
-            if (!$jsonText) {
+            // Langsung ambil array dari response JSON
+            $data = $response->json('data');
+            if (!$data || !is_array($data)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak ada konten yang dikembalikan oleh model.'
-                ], 422);
-            }
-
-            // Hapus teks pembuka sebelum tanda [
-            $jsonStart = strpos($jsonText, '[');
-            if ($jsonStart === false) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Output tidak mengandung JSON array.'
-                ], 422);
-            }
-
-            $cleanJson = substr($jsonText, $jsonStart);
-            $data = json_decode($cleanJson, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal parsing JSON: ' . json_last_error_msg(),
-                    'raw' => $cleanJson
+                    'message' => 'Tidak ada hasil yang dikembalikan oleh AI.'
                 ], 422);
             }
 

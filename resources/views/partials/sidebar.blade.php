@@ -69,7 +69,7 @@
 
     <!-- Pages -->
     <li
-      class="menu-item {{ $activeMenu === 'module' || $activeMenu === 'class' || $activeMenu === 'gamification'  ? 'active open' : '' }}">
+      class="menu-item {{ $activeMenu === 'module' || $activeMenu === 'classes' || $activeMenu === 'gamification'  ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-dock-top"></i>
         <div class="text-truncate" data-i18n="Users">Learning</div>

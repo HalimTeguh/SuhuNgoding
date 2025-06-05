@@ -7,24 +7,29 @@
     <!-- Content -->
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="row">
-            <div class="col-xxl-8 mb-6 order-0">
-                <div class="card">
-                    <div class="d-flex align-items-start row">
-                        <div class="col-sm-7">
-                            <div class="card-body">
-                                <h5 class="card-title text-primary mb-3">Congratulations John! 🎉</h5>
-                                <p class="mb-6">
-                                    You have done 72% more sales today.<br />Check your new badge in your profile.
-                                </p>
-
-                                <a href="javascript:;" class="btn btn-sm btn-outline-primary">View Badges</a>
+            <div class="col-12 col-lg-8 mb-4">
+                <div class="card border-0 shadow-sm h-100 transition-shadow"
+                    style="transition: box-shadow 0.3s ease-in-out;">
+                    <div class="row g-0 align-items-center">
+                        <!-- Text Content -->
+                        <div class="col-md-7 p-4">
+                            <h5 class="card-title text-primary fw-bold mb-3">Welcome to Class: {{ $class->name }} 🎉
+                            </h5>
+                            <div class="text-muted">
+                                <p class="mb-2"><strong>Teacher:</strong> {{ $teacherName }}</p>
+                                <p class="mb-2"><strong>Students:</strong> {{ $studentCount }}</p>
+                                <p class="mb-2"><strong>Modules:</strong> {{ $moduleCount }}</p>
+                                <p class="mb-0">{{ $class->description ?? 'No description
+                                    available.' }}</p>
                             </div>
                         </div>
-                        <div class="col-sm-5 text-center text-sm-left">
-                            <div class="card-body pb-0 px-0 px-md-6">
-                                <img src="{{ asset('/assets/img/illustrations/man-with-laptop.png') }}" height="175"
-                                    class="scaleX-n1-rtl" alt="View Badge User" />
-                            </div>
+                        <!-- Image -->
+                        <div class="col-md-5 text-center text-md-end p-4">
+                            <img src="{{ $class->image ? asset('storage/' . $class->image) : asset('/assets/img/illustrations/default-class-image.png') }}"
+                                alt="Class Image" class="img-fluid rounded-3"
+                                style="max-height: 180px; object-fit: cover; transition: transform 0.3s ease-in-out;"
+                                onmouseover="this.style.transform='scale(1.05)'"
+                                onmouseout="this.style.transform='scale(1)'" />
                         </div>
                     </div>
                 </div>
@@ -34,27 +39,17 @@
                     <div class="col-12 mb-6">
                         <div class="card">
                             <div class="card-body">
-                                <div
-                                    class="d-flex justify-content-between align-items-center flex-sm-row flex-column gap-10">
-                                    <div
-                                        class="d-flex flex-sm-column flex-row align-items-start justify-content-between">
-                                        <div class="card-title mb-6">
-                                            <h5 class="text-nowrap mb-1">Badges</h5>
-                                            <span class="badge bg-label-warning">YEAR 2022</span>
-                                        </div>
-                                        <div class="mt-sm-auto">
-                                            <span class="text-success text-nowrap fw-medium"><i
-                                                    class="bx bx-up-arrow-alt"></i> 68.2%</span>
-                                            <h4 class="mb-0">$84,686k</h4>
-                                        </div>
-                                    </div>
-                                    <div id="profileReportChart"></div>
-                                </div>
+                                <h5 class="card-title text-primary mb-3">Your Bloom Level Progress 🎉</h5>
+
+                                <!-- Bar Chart untuk Bloom Levels -->
+                                <canvas id="bloomChart" width="400" height="200"></canvas>
+                                {{-- <canvas id="bloomLevelChart" width="400" height="200"></canvas> --}}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
 
             <!-- Module -->
             <div class="col-12 col-xxl-8 order-2 order-md-3 order-xxl-2 mb-6">
@@ -107,7 +102,14 @@
                                     </div>
                                 </div>
 
-                                <div id="growthChart"></div>
+                                <div id="PreviewModuleContainer" class="preview-module-container text-center m-auto">
+                                    <img id="imagePreviewModul"
+                                        class="img-fluid rounded preview-module-container {{ ($module->image) ? '' : 'd-none' }}"
+                                        src="{{ $module->image ? asset('storage/'. $module->image) : '' }}"
+                                        alt="Module Image">
+                                    <i id="ImageIconModul"
+                                        class="fa-regular fa-image preview-module-icon {{ ($module->image) ? 'd-none' : '' }}"></i>
+                                </div>
 
                                 <div class="text-center fw-medium my-6" id="progressBar">0%</div>
 
@@ -151,56 +153,11 @@
                         <div class="card h-100">
                             <div class="card-header d-flex align-items-center justify-content-between">
                                 <h5 class="card-title m-0 me-2">Leaderboard</h5>
+
                             </div>
                             <div class="card-body pt-4">
-                                <ul class="p-0 m-0">
-                                    @forelse($leaderboard->take(10) as $index => $entry)
-                                    @php
-                                    $name = $entry->student->user->name ?? 'Unknown';
-                                    $words = explode(' ', $name);
-                                    $initials = strtoupper(implode('', array_map(fn($word) => $word[0], $words)));
-                                    $initials = substr($initials, 0, 2);
-
-                                    $fullName = $entry->student->user->name ?? 'Unknown';
-                                    $shortName = implode(' ', array_slice(explode(' ', $fullName), 0, 2));
-
-                                    $rankDisplay = match ($index) {
-                                    0 => '🥇',
-                                    1 => '🥈',
-                                    2 => '🥉',
-                                    default => '#' . ($index + 1),
-                                    };
-                                    @endphp
-
-                                    <li class="d-flex align-items-center mb-4">
-                                        <div class="avatar avatar-sm mb-2 me-6">
-                                            <span
-                                                class="avatar-initial bg-label-primary rounded-circle text-white fw-bold text-uppercase d-inline-flex justify-content-center align-items-center"
-                                                style="width: 40px; height: 40px; font-size: 14px;">
-                                                {{ $initials }}
-                                            </span>
-                                            <span
-                                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning"
-                                                style="font-size: 12px;">
-                                                {{ $rankDisplay }}
-                                            </span>
-                                        </div>
-                                        <div
-                                            class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                            <div class="me-2">
-                                                <small class="text-muted d-block">{{ $entry->student->NIS ?? '-'
-                                                    }}</small>
-                                                <h6 class="mb-0">{{ $shortName }}</h6>
-                                            </div>
-                                            <div class="user-progress d-flex align-items-center gap-2">
-                                                <h6 class="mb-0">{{ $entry->point }}</h6>
-                                                <span class="text-muted">Point</span>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    @empty
-                                    <li class="text-muted text-center">Belum ada data leaderboard.</li>
-                                    @endforelse
+                                <ul id="leaderboardList" class="p-0 m-0">
+                                    <!-- Data leaderboard akan diisi oleh JS -->
                                 </ul>
                             </div>
                         </div>
@@ -217,14 +174,25 @@
 </div>
 <!-- Content wrapper -->
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
-    const modules = @json($modules); // <- Tambahkan ini di atas
+    const tbody = document.getElementById('contentTable');
+    const modules = @json($modules);
 
     const label = document.getElementById('moduleDropdownLabel');
-    const tbody = document.getElementById('contentTable');
     const totalText = document.getElementById('totalMateri');
     const doneText = document.getElementById('selesaiMateri');
     const progressBar = document.getElementById('progressBar');
+    const imagePreviewModul = document.getElementById('imagePreviewModul');
+    const imageIconModul = document.getElementById('ImageIconModul');
+
+    const leaderboards = @json($leaderboards); // Data leaderboard untuk setiap module
+    const leaderboardList = document.getElementById('leaderboardList');
+
+    const bloomData = @json($bloomLevels);
+    let bloomChartInstance = null;
+    
 
     function changeModule(moduleId) {
         const module = modules.find(m => m.id === moduleId);
@@ -234,17 +202,38 @@
         tbody.innerHTML = '';
         let total = 0, done = 0;
 
-        module.contents.forEach(content => {
+        module.contents.forEach((content, index) => {
             total++;
-            const status = content.progress_status || 'belum';
-            const badge = status === 'done' ? 'success' : status === 'progres' ? 'info' : 'secondary';
-            if (status === 'done') done++;
+            const status = (content.progress_status || 'belum').toLowerCase();
+            let badgeClass = 'secondary';
+            let statusLabel = content.progress_status || 'Belum';
+
+            if (status.includes('lulus')) {
+                badgeClass = status.includes('tidak') ? 'danger' : 'success';
+            } else if (status === 'sedang belajar') {
+                badgeClass = 'info';
+            }
+
+            if (status.includes('lulus') && !status.includes('tidak')) done++;
+
+            // 🔥 Cek apakah konten dapat dibuka
+            let canOpen = false;
+            if (index === 0) {
+                canOpen = true;
+            } else {
+                const prevContent = module.contents[index - 1];
+                const prevStatus = (prevContent.progress_status || '').toLowerCase();
+                if (prevStatus.includes('lulus') && !prevStatus.includes('tidak')) {
+                    canOpen = true;
+                }
+            }
 
             const row = `
-                <tr onclick="window.location='/dashboard/student/module/${content.id}'" style="cursor: pointer;">
+                <tr style="cursor: ${canOpen ? 'pointer' : 'not-allowed'};"
+                    ${canOpen ? `onclick="window.location='/dashboard/student/class/{{ $class->id }}/module/${content.id}'"` : ''}>
                     <td>${content.title}</td>
                     <td class="text-end">
-                        <span class="badge bg-${badge} d-inline-block">${status}</span>
+                        <span class="badge bg-${badgeClass}">${statusLabel}</span>
                     </td>
                 </tr>
             `;
@@ -254,13 +243,128 @@
         totalText.textContent = total;
         doneText.textContent = done;
         const percent = total > 0 ? Math.round((done / total) * 100) : 0;
-        progressBar.textContent = percent + '% Progression';
-        console.log(total, done, percent, progressBar);
+        progressBar.textContent = `${percent}% Progression`;
+
+        // Update the image preview based on the selected module
+        if (module.image) {
+            imagePreviewModul.src = '{{ asset('storage/') }}' + '/' + module.image;
+            imagePreviewModul.classList.remove('d-none');
+            imageIconModul.classList.add('d-none');
+        } else {
+            imagePreviewModul.classList.add('d-none');
+            imageIconModul.classList.remove('d-none');
+        }
+
+        showLeaderboard(moduleId);
+        renderBloomChart(moduleId);
+    }
+
+    function showLeaderboard(moduleId) {
+        leaderboardList.innerHTML = ''; // Kosongkan daftar leaderboard sebelumnya
+        
+        if (moduleId && leaderboards[moduleId]) {
+            const entries = leaderboards[moduleId];
+            
+            // Ambil hanya 10 data teratas
+            const topEntries = entries.slice(0, 10);
+
+            topEntries.forEach((entry, index) => {
+                const name = entry.student.user.name || 'Unknown';
+                const words = name.split(' ');
+                const initials = words.map(word => word[0].toUpperCase()).join('').slice(0, 2);
+                const shortName = words.slice(0, 2).join(' ');
+                const rankDisplay = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+                
+                const listItem = `
+                    <li class="d-flex align-items-center mb-4">
+                        <div class="avatar avatar-sm mb-2 me-6">
+                            <span class="avatar-initial bg-label-primary rounded-circle text-white fw-bold text-uppercase d-inline-flex justify-content-center align-items-center" style="width: 40px; height: 40px; font-size: 14px;">
+                                ${initials}
+                            </span>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning" style="font-size: 12px;">
+                                ${rankDisplay}
+                            </span>
+                        </div>
+                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                            <div class="me-2">
+                                <small class="text-muted d-block">${entry.student.NIS || '-'}</small>
+                                <h6 class="mb-0">${shortName}</h6>
+                            </div>
+                            <div class="user-progress d-flex align-items-center gap-2">
+                                <h6 class="mb-0">${entry.point}</h6>
+                                <span class="text-muted">Point</span>
+                            </div>
+                        </div>
+                    </li>
+                `;
+                leaderboardList.insertAdjacentHTML('beforeend', listItem);
+            });
+        } else {
+            leaderboardList.innerHTML = '<li class="text-muted text-center">No leaderboard data available for this module.</li>';
+        }
+    }
+
+    function renderBloomChart(moduleId) {
+        const bloom = bloomData[moduleId];
+        if (!bloom) return;
+
+        const labels = [];
+        const percentages = [];
+
+        for (const level in bloom) {
+            labels.push(level.charAt(0).toUpperCase() + level.slice(1)); // Capitalize
+            percentages.push(bloom[level].percentage);
+        }
+
+        const ctx = document.getElementById('bloomChart').getContext('2d');
+
+        if (bloomChartInstance) {
+            bloomChartInstance.destroy();
+        }
+
+        bloomChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Bloom Level (%)',
+                    data: percentages,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.x + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         if (modules.length > 0) changeModule(modules[0].id);
     });
+
 </script>
 
 @endsection

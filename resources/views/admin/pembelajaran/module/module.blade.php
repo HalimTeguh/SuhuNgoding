@@ -119,9 +119,9 @@
                         @foreach ($modules as $key => $module)
                         <tr>
                             <td>{{ $key + 1 }}</td>
-                            <td>{{ $module->name }}</td>
+                            <td>{{ $module->title }}</td>
                             <td>{{ $module->teacher->user->name }}</td>
-                            <td>{{ $module->description }}</td>
+                            <td>{{ $module->description ?? '-' }}</td>
                             <td>
                                 <div class="dropdown">
                                     <button type="button" class="btn btn-light p-2 " data-bs-toggle="dropdown">
