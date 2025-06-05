@@ -162,8 +162,7 @@ class ModuleController extends Controller
      */
     public function show(string $id)
     {
-        //
-        $module = Module::find($id)->first();
+        $module = Module::with('teacher.user')->findOrFail($id);
 
         $contents = ModuleContent::where('module_id', $id)->get();
 

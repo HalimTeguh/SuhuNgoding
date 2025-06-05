@@ -41,6 +41,15 @@ class LoginController extends Controller
                     ]
                 ]);
                 // return redirect()->route('dashboard.admin')->with('success', 'Login berhasil sebagai Admin!');
+            } elseif ($user->role === 'student') {
+                return redirect()->route('dashboard.student')->with('toasts', [
+                    [
+                        'type' => 'success',  // Jenis toast
+                        'title' => 'Login Sukses',  // Judul toast
+                        'message' => 'Selamat datang kembali!',  // Pesan toast
+                        'time' => now()->diffForHumans()  // Waktu toast
+                    ]
+                ]);
             }
             // elseif ($user->role === 'teacher') {
             //     return redirect()->route('teacher.dashboard')->with('success', 'Login berhasil sebagai Teacher!');
@@ -66,6 +75,6 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login')->with('success', 'Anda telah logout.');
+        return redirect('/')->with('success', 'Anda telah logout.');
     }
 }

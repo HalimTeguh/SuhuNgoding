@@ -26,6 +26,7 @@ class AdminController extends Controller
         $admins = User::where('role', 'admin')
             ->whereNull('deleted_at')
             ->get();
+        
 
         return view('admin.users.admin', [
             'admins' => $admins,

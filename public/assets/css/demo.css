@@ -559,3 +559,22 @@
     box-shadow: 0 0 15px rgba(13, 110, 253, 0.5);
     transform: scale(1.01);
 }
+
+.referensi_code {
+    background-color: #f4f4f4;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-family: 'Courier New', monospace;
+    overflow-x: auto; /* Membuat scroll horizontal jika kode terlalu panjang */
+    white-space: pre-wrap; /* Memastikan kode tetap rapih meskipun panjang */
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.referensi_code pre {
+    margin: 0;
+    padding: 0;
+    font-size: inherit;
+    background-color: transparent;
+}

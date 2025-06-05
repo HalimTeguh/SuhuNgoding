@@ -13,9 +13,13 @@ use App\Http\Controllers\Dashboard\StudentController;
 use App\Http\Controllers\Dashboard\TeacherController;
 use App\Http\Controllers\ExceptionPageController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\GamificationController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ModuleContentController;
+use App\Http\Controllers\StudentClassController;
 use App\Models\Admin;
 use App\Models\Classes;
+use App\Models\Gamification;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,7 +33,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
+Route::get('/', [LandingController::class, 'index']);
 
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
@@ -54,8 +58,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/download/template-student', [FileController::class, 'downloadTemplateStudentExcel'])->name('download.template.student');
 
-    Route::middleware('role:admin')->group(function () {
 
+
+    // ROLE => ADMIN
+    Route::middleware('role:admin')->group(function () {
 
         Route::get('/dashboard/admin', [DashboardController::class, 'admin'])->name('dashboard.admin');
 
@@ -87,8 +93,26 @@ Route::middleware(['auth'])->group(function () {
 
         Route::delete('/dashboard/admin/pembelajaran/quiz/option/{optionId}', [ModuleQuizController::class, 'deleteOption'])->name('dashboard.module.quiz.deleteOption');
 
+        Route::resource('/dashboard/admin/pembelajaran/gamification', GamificationController::class);
 
         // Route::post('/convert-pdf', [ModuleQuizController::class, 'convertPdf']);
+
+    });
+
+
+    // ROLE => STUDENT
+    Route::middleware('role:student')->group(function () {
+
+        Route::get('/dashboard/student', [DashboardController::class, 'student'])->name('dashboard.student');
+        Route::get('/dashboard/student/class/', [StudentClassController::class, 'index'])->name('dashboard.student.class');
+        Route::get('/dashboard/student/class/{classId}', [StudentClassController::class, 'show'])->name('dashboard.student.class.show');
+        Route::get('/dashboard/student/class/{classId}/module/{moduleId}', [StudentClassController::class, 'showContent'])->name('dashboard.student.module');
+        Route::get('/dashboard/student/class/{classId}/module/{moduleId}/quiz/', [StudentClassController::class, 'showQuizContent'])->name('dashboard.student.module.quiz');
+
+        Route::post('/dashboard/student/class/{classId}/module/{moduleId}/quiz/', [StudentClassController::class, 'saveQuizStudent'])->name('dashboard.student.module.quiz.submit');
+        Route::get('/dashboard/student/class/{classId}/module/{moduleId}/quiz/result/{summaryId}', [StudentClassController::class, 'showResultQuiz'])
+            ->name('dashboard.student.module.quiz.result');
+        Route::post('/dashboard/student/save-duration/content/', [StudentClassController::class, 'saveDurationStudyContent'])->name('dashboard.student.module.saveDurationStudyContent');
 
     });
 
