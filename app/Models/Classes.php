@@ -22,6 +22,8 @@ class Classes extends Model
         return $this->belongsToMany(Student::class, 'class_student', 'class_id', 'student_id');
     }
 
+/*************  ✨ Windsurf Command ⭐  *************/
+/*******  0a936e8a-8d85-4eaf-bb09-231dc227a014  *******/
     public function modules()
     {
         return $this->belongsToMany(Module::class, 'class_module', 'class_id', 'module_id');

@@ -154,8 +154,7 @@
       <span class="menu-header-text">Your Environtment</span>
     </li>
     <!-- Pages -->
-    <li
-      class="menu-item {{ $activeMenu === 'class' || $activeMenu === 'learderboard'  ? 'active open' : '' }}">
+    <li class="menu-item {{ $activeMenu === 'class' || $activeMenu === 'learderboard'  ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-dock-top"></i>
         <div class="text-truncate" data-i18n="Learning">Learning</div>
@@ -167,15 +166,10 @@
           </a>
         </li>
         <li class="menu-item {{ $activeMenu === 'learderboard' ? 'active' : '' }}">
-          <a href="/dashboard/admin/users/learderboard" class="menu-link">
+          <a href="{{ route('dashboard.student.class.leaderboard') }}" class="menu-link">
             <div class="text-truncate" data-i18n="learderboard">Leaderboard</div>
           </a>
         </li>
-        {{-- <li class="menu-item {{ $activeMenu === 'student' ? 'active' : '' }}">
-          <a href="/dashboard/admin/users/student" class="menu-link">
-            <div class="text-truncate" data-i18n="Student">Your Test</div>
-          </a>
-        </li> --}}
       </ul>
     </li>
 

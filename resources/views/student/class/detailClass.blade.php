@@ -29,7 +29,7 @@
                                 alt="Class Image" class="img-fluid rounded-3"
                                 style="max-height: 180px; object-fit: cover; transition: transform 0.3s ease-in-out;"
                                 onmouseover="this.style.transform='scale(1.05)'"
-                                onmouseout="this.style.transform='scale(1)'" />
+                                onmouseout="this.style.transform='scale(1)'"/>
                         </div>
                     </div>
                 </div>
@@ -113,6 +113,8 @@
 
                                 <div class="text-center fw-medium my-6" id="progressBar">0%</div>
 
+                                <div class="text-center fw-medium my-6" id="moduleDescription"> {!! $module->description !!}</div>
+
                                 <div class="d-flex gap-3 justify-content-between">
                                     <div class="d-flex">
                                         <div class="avatar me-2">
@@ -183,6 +185,8 @@
     const label = document.getElementById('moduleDropdownLabel');
     const totalText = document.getElementById('totalMateri');
     const doneText = document.getElementById('selesaiMateri');
+    const moduleDescription = document.getElementById('moduleDescription');
+
     const progressBar = document.getElementById('progressBar');
     const imagePreviewModul = document.getElementById('imagePreviewModul');
     const imageIconModul = document.getElementById('ImageIconModul');
@@ -192,7 +196,6 @@
 
     const bloomData = @json($bloomLevels);
     let bloomChartInstance = null;
-    
 
     function changeModule(moduleId) {
         const module = modules.find(m => m.id === moduleId);
@@ -242,6 +245,7 @@
 
         totalText.textContent = total;
         doneText.textContent = done;
+        moduleDescription.innerHTML = module.description || '-';
         const percent = total > 0 ? Math.round((done / total) * 100) : 0;
         progressBar.textContent = `${percent}% Progression`;
 
@@ -308,12 +312,18 @@
         const bloom = bloomData[moduleId];
         if (!bloom) return;
 
+        console.log(bloom);
+
         const labels = [];
         const percentages = [];
+        const corrects = [];
+        const totals = [];
 
         for (const level in bloom) {
             labels.push(level.charAt(0).toUpperCase() + level.slice(1)); // Capitalize
             percentages.push(bloom[level].percentage);
+            corrects.push(bloom[level].correct);
+            totals.push(bloom[level].total);
         }
 
         const ctx = document.getElementById('bloomChart').getContext('2d');
@@ -329,8 +339,8 @@
                 datasets: [{
                     label: 'Bloom Level (%)',
                     data: percentages,
-                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(105, 108, 255, 0.6)',
+                    borderColor: 'rgba(105, 108, 255, 1)',
                     borderWidth: 1
                 }]
             },
@@ -341,7 +351,12 @@
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return context.parsed.x + '%';
+                                const index = context.dataIndex;
+                                const level = labels[index].toLowerCase();
+                                const correct = corrects[index];
+                                const total = totals[index];
+                                const percentage = percentages[index];
+                                return `Correct: ${correct} / ${total} (${percentage}%)`;
                             }
                         }
                     }

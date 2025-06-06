@@ -553,8 +553,47 @@ class StudentClassController extends Controller
         return $levelData;
     }
 
+    public function showLeaderboard()
+    {
+        $student = auth()->user()->student;
 
+        // Ambil semua kelas yang diikuti siswa (beserta modul & contents)
+        $classes = Classes::whereHas('students', function ($query) use ($student) {
+            $query->where('student_id', $student->id);
+        })
+            ->with(['modules.contents'])
+            ->orderBy('name')
+            ->get();
 
+        // Siapkan array leaderboard
+        $leaderboards = [];
+        foreach ($classes as $class) {
+            foreach ($class->modules as $module) {
+                $leaderboards[$class->id][$module->id] = Leaderboard::with('student.user')
+                    ->where('class_id', $class->id)
+                    ->where('module_id', $module->id)
+                    ->orderByDesc('point')
+                    ->get();
+            }
+        }
+
+        // Ambil semua content ID dari seluruh module di semua kelas
+        $contentIds = $classes->pluck('modules.*.contents.*.id')->flatten();
+
+        // Progress
+        $summaries = StudentModulSummary::with(['content.module'])
+            ->where('student_id', $student->id)
+            ->whereIn('content_id', $contentIds)
+            ->orderByDesc('quiz_submitted_at')
+            ->get();
+
+        return view('student.class.leaderboard', [
+            'classes' => $classes,
+            'leaderboards' => $leaderboards,
+            'summaries' => $summaries,
+            'activeMenu' => 'learderboard',
+        ]);
+    }
 
 
 

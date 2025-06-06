@@ -114,6 +114,7 @@ Route::middleware(['auth'])->group(function () {
             ->name('dashboard.student.module.quiz.result');
         Route::post('/dashboard/student/save-duration/content/', [StudentClassController::class, 'saveDurationStudyContent'])->name('dashboard.student.module.saveDurationStudyContent');
 
+        Route::get('/dashboard/student/leaderboard/', [StudentClassController::class, 'showLeaderboard'])->name('dashboard.student.class.leaderboard');
     });
 
     // Route::middleware('role:teacher')->group(function () {
