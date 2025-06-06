@@ -16,5 +16,6 @@ class VerifyCsrfToken extends Middleware
         '/execute', // Tambahkan route ini agar tidak dicek CSRF
         '/test-docker',
         '/upload-image',
+        '/dashboard/student/save-duration/content',
     ];
 }

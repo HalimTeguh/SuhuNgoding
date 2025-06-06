@@ -56,6 +56,8 @@ class ModuleContentController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        set_time_limit(600);
+
         try {
             DB::beginTransaction();
 
@@ -81,12 +83,9 @@ class ModuleContentController extends Controller
 
             // Ambil semua src gambar yang digunakan
             preg_match_all('/<img[^>]+src="([^">]+)"/i', $htmlContent, $matches);
-            $usedImages = collect($matches[1])->map(function ($url) {
-                return basename(parse_url($url, PHP_URL_PATH));
-            });
+            $usedImages = collect($matches[1])->map(fn($url) => basename(parse_url($url, PHP_URL_PATH)));
 
             $finalImagePaths = [];
-
             foreach ($usedImages as $filename) {
                 $fromTemp = storage_path("app/public/uploads/temp/$filename");
                 $fromOutput = storage_path("app/convert2md/output/$sourceUuid/$filename");
@@ -107,14 +106,12 @@ class ModuleContentController extends Controller
                 $finalImagePaths[] = "/storage/uploads/moduleContent/$sourceUuid/$filename";
             }
 
-
-            // Pindahkan input file PDF jika ada
+            // Pindahkan input/output file
             $inputPdf = storage_path("app/convert2md/input/$sourceUuid.pdf");
             if (file_exists($inputPdf)) {
                 File::copy($inputPdf, "$moduleFolder/$sourceUuid.pdf");
             }
 
-            // Pindahkan output file .md dan meta.json jika ada
             $mdFile = storage_path("app/convert2md/output/$sourceUuid/$sourceUuid.md");
             $metaFile = storage_path("app/convert2md/output/$sourceUuid/{$sourceUuid}_meta.json");
             if (file_exists($mdFile)) {
@@ -143,78 +140,88 @@ class ModuleContentController extends Controller
             ]);
 
 
+            DB::commit(); // Selesaikan update moduleContent dulu
+
+            // Jika generate quiz diminta, lakukan proses ini di transaction terpisah
             if ($shouldGenerateQuiz) {
-                $aiController = new AiController();
-                $fakeRequest = new \Illuminate\Http\Request(['materi' => $htmlContent]);
-            
-                $response = $aiController->generateSoalFromLLM($fakeRequest)->getData(true);
-            
-                if (!($response['success'] ?? false)) {
-                    throw new \Exception("Gagal generate soal dari AI: " . ($response['message'] ?? 'Tidak diketahui'));
-                }
-            
-                $quizDataArray = $response['data'] ?? [];
-            
-                if (!is_array($quizDataArray)) {
-                    throw new \Exception("Format data soal dari AI tidak valid.");
-                }
-            
-                // Hapus quiz lama
-                $content->quizzes()->delete();
-            
-                $levelPoints = [
-                    'Mengingat' => 1,
-                    'Memahami' => 2,
-                    'Menerapkan' => 3,
-                    'Menganalisis' => 4,
-                    'Mengevaluasi' => 5
-                ];
-            
-                $levelMap = [
-                    'Mengingat' => 'remember',
-                    'Memahami' => 'understand',
-                    'Menerapkan' => 'apply',
-                    'Menganalisis' => 'analyze',
-                    'Mengevaluasi' => 'evaluate'
-                ];
-            
-                foreach ($quizDataArray as $quizData) {
-                    $levelId = $quizData['level'] ?? 'Mengingat';
-                    $engLevel = $levelMap[$levelId] ?? 'remember';
-                    $point = $levelPoints[$levelId] ?? 1;
-            
-                    $quiz = Quiz::create([
-                        'content_id' => $content->id,
-                        'question' => $quizData['question'] ?? '-',
-                        'type' => $engLevel === 'apply' ? 'code' : 'multiple_choice',
-                        'bloom_level' => $engLevel,
-                        'point' => $point
-                    ]);
-            
-                    if ($engLevel === 'apply') {
-                        $quiz->code()->create([
-                            'quiz_id' => $quiz->id,
-                            'test_cases' => $quizData['reference_code'] ?? '',
-                            'expected_output' => $quizData['output'] ?? '',
-                            'language' => 'python',
-                            'feedback' => $quizData['feedback'] ?? 'Output sesuai dengan format yang diminta.'
+                DB::beginTransaction();
+                try {
+                    $aiController = new AiController();
+                    $fakeRequest = new \Illuminate\Http\Request(['materi' => $htmlContent]);
+                    $response = $aiController->generateSoalFromLLM($fakeRequest)->getData(true);
+
+                    if (!($response['success'] ?? false)) {
+                        throw new \Exception("Gagal generate soal dari AI: " . ($response['message'] ?? 'Tidak diketahui'));
+                    }
+
+                    $quizDataArray = $response['data'] ?? [];
+                    if (!is_array($quizDataArray)) {
+                        throw new \Exception("Format data soal dari AI tidak valid.");
+                    }
+
+                    // Hapus quiz lama
+                    $content->quizzes()->delete();
+
+                    $levelPoints = [
+                        'Mengingat' => 1,
+                        'Memahami' => 2,
+                        'Menerapkan' => 3,
+                        'Menganalisis' => 4,
+                        'Mengevaluasi' => 5
+                    ];
+
+                    $levelMap = [
+                        'Mengingat' => 'remember',
+                        'Memahami' => 'understand',
+                        'Menerapkan' => 'apply',
+                        'Menganalisis' => 'analyze',
+                        'Mengevaluasi' => 'evaluate'
+                    ];
+
+                    foreach ($quizDataArray as $quizData) {
+                        $levelId = $quizData['level'] ?? 'Mengingat';
+                        $engLevel = $levelMap[$levelId] ?? 'remember';
+                        $point = $levelPoints[$levelId] ?? 1;
+
+                        $questionText = $quizData['question'] ?? '-';
+                        if (!empty($quizData['reference_code']) && $engLevel !== 'apply') {
+                            $referenceCodeDiv = '<div class="referensi_code"><pre>' . htmlentities($quizData['reference_code']) . '</pre></div>';
+                            $questionText .= '<br>' . $referenceCodeDiv;
+                        }
+
+                        $quiz = Quiz::create([
+                            'content_id' => $content->id,
+                            'question' => $questionText,
+                            'type' => $engLevel === 'apply' ? 'code' : 'multiple_choice',
+                            'bloom_level' => $engLevel,
+                            'point' => $point
                         ]);
-                    } else {
-                        foreach ($quizData['choices'] ?? [] as $choice) {
-                            $quiz->choices()->create([
+
+                        if ($engLevel === 'apply') {
+                            $quiz->code()->create([
                                 'quiz_id' => $quiz->id,
-                                'choice_text' => $choice['answer'] ?? '-',
-                                'is_correct' => $choice['is_correct'] ?? false,
-                                'feedback' => $choice['feedback'] ?? '',
+                                'test_cases' => $quizData['reference_code'] ?? '',
+                                'expected_output' => $quizData['output'] ?? '',
+                                'language' => 'python',
+                                'feedback' => $quizData['feedback'] ?? 'Output sesuai dengan format yang diminta.'
                             ]);
+                        } else {
+                            foreach ($quizData['choices'] ?? [] as $choice) {
+                                $quiz->choices()->create([
+                                    'quiz_id' => $quiz->id,
+                                    'choice_text' => $choice['answer'] ?? '-',
+                                    'is_correct' => $choice['is_correct'] ?? false,
+                                    'feedback' => $choice['feedback'] ?? '',
+                                ]);
+                            }
                         }
                     }
+                    DB::commit();
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    throw new \Exception("Gagal generate quiz: " . $e->getMessage());
                 }
             }
-            
-
-
-            DB::commit();
 
             return redirect()->back()->with('toasts', [[
                 'type' => 'success',
@@ -236,6 +243,7 @@ class ModuleContentController extends Controller
                 ->with('form_error', 'update');
         }
     }
+
 
     /**
      * Remove the specified resource from storage.

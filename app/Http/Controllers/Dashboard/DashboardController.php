@@ -16,6 +16,9 @@ class DashboardController extends Controller
 
     public function admin()
     {
+        $user = auth()->user();
+
+
         return view('admin.dashboard.index', [
             'activeMenu' => 'dashboard'
         ]);
@@ -28,6 +31,8 @@ class DashboardController extends Controller
 
     public function student()
     {
-        return view('student.dashboard');
+        return view('student.dashboard.index', [
+            'activeMenu' => 'dashboard'
+        ]);
     }
 }

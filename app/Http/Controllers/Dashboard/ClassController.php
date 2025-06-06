@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Classes;
+use App\Models\Leaderboard;
 use App\Models\Module;
 use App\Models\Student;
 use App\Models\User;
@@ -256,7 +257,24 @@ class ClassController extends Controller
             'module_ids.*' => 'exists:modules,id',
         ]);
 
+        // Tambahkan module ke class tanpa menghapus module yang sudah ada
         $class->modules()->syncWithoutDetaching($validated['module_ids']);
+
+        // Ambil semua student di class
+        $students = $class->students;
+
+        // Loop semua module yang ditambahkan
+        foreach ($validated['module_ids'] as $moduleId) {
+            foreach ($students as $student) {
+                Leaderboard::firstOrCreate([
+                    'class_id'   => $class->id,
+                    'module_id'  => $moduleId,
+                    'student_id' => $student->id,
+                ], [
+                    'point' => 0
+                ]);
+            }
+        }
 
         return redirect()->back()->with('toasts', [
             [
@@ -268,12 +286,13 @@ class ClassController extends Controller
         ]);
     }
 
+
     public function detachModule(Classes $class, Module $module)
     {
         $class->modules()->detach($module->id);
 
-        // (Opsional) Hapus progress siswa terkait module + class
-        // DB::table('module_progress')->where(...)->delete();
+        // Hapus leaderboard
+        Leaderboard::where('class_id', $class->id)->where('module_id', $module->id)->delete();
 
         return back()->with('toasts', [
             [
@@ -297,6 +316,18 @@ class ClassController extends Controller
             $class->students()->attach($studentId);
         }
 
+        $modules = $class->modules;
+
+        foreach ($modules as $module) {
+            Leaderboard::firstOrCreate([
+                'class_id'   => $class->id,
+                'module_id'  => $module->id,
+                'student_id' => $studentId,
+            ], [
+                'point' => 0
+            ]);
+        }
+
         return redirect()->back()->with('toasts', [
             [
                 'type' => 'success',
@@ -312,8 +343,7 @@ class ClassController extends Controller
     {
         $class->students()->detach($student->id);
 
-        // (Opsional) Hapus progress siswa terkait module + class
-        // DB::table('module_progress')->where(...)->delete();
+        Leaderboard::where('class_id', $class->id)->where('student_id', $student->id)->delete();
 
         return back()->with('toasts', [
             [
