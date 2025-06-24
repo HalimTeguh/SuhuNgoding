@@ -32,4 +32,9 @@ class Student extends User
     {
         return $this->hasMany(Leaderboard::class, 'student_id');
     }
+
+    public function tTests()
+    {
+        return $this->hasMany(TTesting::class); // Relasi one-to-many
+    }
 }

@@ -27,6 +27,8 @@ class ClassController extends Controller
     public function index()
     {
         //
+        $user = auth()->user();
+
         $classes = Classes::whereNull('deleted_at')
             ->get();
 
@@ -39,6 +41,7 @@ class ClassController extends Controller
             ->get();
 
         return view('admin.pembelajaran.class.class', [
+            'user' => $user,
             'classes' => $classes,
             'allTeachers' => $allTeachers,
             'allStudents' => $allStudents,
@@ -207,6 +210,8 @@ class ClassController extends Controller
     public function show(string $id)
     {
         //
+        $user = auth()->user();
+
         $class = Classes::with(['teacher.user', 'students.user', 'modules.teacher.user'])->findOrFail($id);
 
         $allTeachers = User::where('role', 'teacher')
@@ -240,6 +245,7 @@ class ClassController extends Controller
             ->get();
 
         return view('admin.pembelajaran.class.detailClass', [
+            'user' => $user,
             'class' => $class,
             'teacher' => $class->teacher,
             'allTeacher' => $allTeachers,

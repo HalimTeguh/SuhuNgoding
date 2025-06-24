@@ -13,10 +13,12 @@ class GamificationController extends Controller
      */
     public function index()
     {
+        $user = auth()->user();
         // Ambil hanya admin yang belum dihapus (deleted_at == null)
         $gamiData = Gamification::all();
 
         return view('admin.pembelajaran.gamification.gamification', [
+            'user' => $user,
             'gamiData' => $gamiData,
             'activeMenu' => 'gamification'
         ]);

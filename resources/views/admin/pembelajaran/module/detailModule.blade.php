@@ -20,12 +20,15 @@
                                     class="bx bx-sm bx-book-content me-1_5"></i> Content</a></li>
                         <li class="nav-item"><a class="nav-link" href="javascript:void(0);" data-tab="Quiz"><i
                                     class="bx bx-sm bx-poll me-1_5"></i> Quiz</a></li>
+                        <li class="nav-item"><a class="nav-link" href="javascript:void(0);" data-tab="ControlContent"><i
+                                    class="bx bx-sm bx-poll me-1_5"></i> Control Content</a></li>
                     </ul>
                 </div>
 
                 @include('admin.pembelajaran.module.pages.basicModuleSection')
                 @include('admin.pembelajaran.module.pages.contentModuleSection')
                 @include('admin.pembelajaran.module.pages.quizModuleSection')
+                @include('admin.pembelajaran.module.pages.controlContentModuleSection')
 
                 <div class="card deleteSection">
                     <h5 class="card-header">Delete Account</h5>
@@ -95,6 +98,7 @@
             "Basic": document.querySelector(".basic-module"),
             "Content": document.querySelector(".content-module"),
             "Quiz": document.querySelector(".quiz-module"),
+            "ControlContent": document.querySelector(".control-module")
         };
         const urlParams = new URLSearchParams(window.location.search);
 
@@ -143,9 +147,15 @@
             }
 
             // Jika masuk ke tab Content, load pertemuan terakhir yang aktif
-            if (tabName === "Content") {
+            if (tabName === "Quiz") {
                 let quizId = activeContent || 1; // Default ke pertemuan 1 jika belum ada yang disimpan
                 loadQuiz(moduleId, contentId);
+            }
+
+            // Jika masuk ke tab Content, load pertemuan terakhir yang aktif
+            if (tabName === "ControlContent") {
+                let contentId = activeContent || 1; // Default ke pertemuan 1 jika belum ada yang disimpan
+                loadControlContent(moduleId, contentId);
             }
         }
 

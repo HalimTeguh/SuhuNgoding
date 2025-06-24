@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('study_content_total_duration')->default(0);
             $table->integer('quiz_attempts_total_duration')->default(0);
             $table->decimal('total_score', 5, 2)->nullable();
-            $table->enum('status', ['Lulus', 'Tidak Lulus'])->nullable();
+            $table->enum('status', ['Lulus', 'Tidak Lulus', 'Sedang Belajar'])->nullable();
             $table->dateTime('quiz_submitted_at')->nullable();
             $table->integer('quiz_attempts_count')->default(1);
             $table->timestamps();

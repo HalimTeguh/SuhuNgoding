@@ -16,10 +16,14 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\GamificationController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ModuleContentController;
+use App\Http\Controllers\ModuleControlController;
 use App\Http\Controllers\StudentClassController;
+use App\Http\Controllers\StudentTestingController;
+use App\Http\Controllers\TestingQuesController;
 use App\Models\Admin;
 use App\Models\Classes;
 use App\Models\Gamification;
+use App\Models\StudentTestAnswer;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -45,6 +49,15 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/register', [RegisterController::class, 'index']);
     Route::post('/register', [RegisterController::class, 'create']);
+
+    Route::get('/change-password', [LoginController::class, 'changePasswordView'])->name('changePassword');
+    Route::post('/change-password', [LoginController::class, 'changePassword'])->name('changePassword.submit');
+
+    Route::post('/generate-soal/preposttest', [AiController::class, 'generatePrePostTestQuestions']);
+
+    Route::post('/dashboard/admin/testing/quiz/generate', [TestingQuesController::class, 'saveGenerateQuestionFromLLM'])->name('quiz.generate');
+
+    Route::post('/dashboard/admin/testing/quiz/save-question-from-json', [TestingQuesController::class, 'saveQuestionFromJson'])->name('quiz.save-json');
 });
 
 
@@ -55,6 +68,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/upload-image', [FileController::class, 'uploadImage'])->name('upload.image');
 
     Route::post('/generate-soal', [AiController::class, 'generateSoalFromLLM']);
+
+    Route::post('/generate-soal/preposttest', [AiController::class, 'generatePrePostTestQuestions']);
 
     Route::get('/download/template-student', [FileController::class, 'downloadTemplateStudentExcel'])->name('download.template.student');
 
@@ -87,13 +102,40 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/dashboard/admin/pembelajaran/module/{moduleId}/content/{contentId}', [ModuleController::class, 'getModuleContent'])->name('dashboard.module.content');
         Route::get('/dashboard/admin/pembelajaran/module/{moduleId}/content/{contentId}/quiz', [ModuleController::class, 'getModuleQuiz'])->name('dashboard.module.quiz');
+        Route::get('/dashboard/admin/pembelajaran/module/{moduleId}/content/{contentId}/control', [ModuleController::class, 'getModuleControl'])->name('dashboard.module.control');
         Route::post('/dashboard/admin/pembelajaran/module/{moduleId}/content/{contentId}/import', [ModuleController::class, 'importModule'])->name('dashboard.module.importContent');
         Route::resource('/dashboard/admin/pembelajaran/content', ModuleContentController::class);
         Route::resource('/dashboard/admin/pembelajaran/quiz', ModuleQuizController::class);
+        Route::put('/dashboard/admin/pembelajaran/content/control/update', [ModuleControlController::class, 'update'])->name('dashboard.module.control.update');
+
 
         Route::delete('/dashboard/admin/pembelajaran/quiz/option/{optionId}', [ModuleQuizController::class, 'deleteOption'])->name('dashboard.module.quiz.deleteOption');
 
         Route::resource('/dashboard/admin/pembelajaran/gamification', GamificationController::class);
+
+        Route::resource('/dashboard/admin/testing/quiz', TestingQuesController::class);
+        Route::get('/dashboard/admin/testing/setting', [TestingQuesController::class, 'testingEnvironment'])->name('dashboard.testing.setting');
+        Route::post('/dashboard/admin/testing/setting/assign-class', [TestingQuesController::class, 'assignClass'])->name('dashboard.testing.assignClass');
+        Route::get('/dashboard/admin/testing/setting/class/{classId}/module/{moduleId}/summary', [TestingQuesController::class, 'getClassTestingSummary']);
+
+        Route::post('/dashboard/admin/testing/setting/start-test', [TestingQuesController::class, 'startTest'])->name('testing.start');
+        Route::post('/dashboard/admin/testing/setting/reset-test', [TestingQuesController::class, 'resetTest'])->name('testing.reset');
+
+        Route::post('/dashboard/admin/testing/setting/divide-class', [TestingQuesController::class, 'divideIndependentSampling'])->name('testing.divideClass');
+        Route::post('/dashboard/admin/testing/setting/reset-class', [TestingQuesController::class, 'resetIndependentSampling'])->name('testing.resetClass');
+
+        Route::get('/dashboard/admin/testing/setting/class/{classId}/module/{moduleId}/levenes-test', [TestingQuesController::class, 'levenesPretest'])->name('testing.levenesTest');
+
+        Route::get('/dashboard/admin/testing/setting/class/{classId}/module/{moduleId}/paired-test', [TestingQuesController::class, 'getPairedTestResult'])->name('testing.pairedTest');
+        Route::post('/dashboard/admin/testing/paired-test/run', [TestingQuesController::class, 'runPairedTTest'])->name('testing.pairedTest.run');
+
+        Route::get('/dashboard/admin/testing/setting/class/{classId}/module/{moduleId}/independent-test', [TestingQuesController::class, 'getIndependentTestResult'])->name('testing.independentTest');
+        Route::post('/dashboard/admin/testing/independent-test/run', [TestingQuesController::class, 'runIndependentTTest'])->name('testing.independentTest.run');
+
+        Route::post('/dashboard/admin/testing/change-class', [TestingQuesController::class, 'moveStudentClass'])->name('testing.moveClass');
+
+        Route::get('/dashboard/admin/testing/setting/export-summary/{classId}/{moduleId}', [TestingQuesController::class, 'exportSummary'])
+            ->name('testing.exportSummary');
 
         // Route::post('/convert-pdf', [ModuleQuizController::class, 'convertPdf']);
 
@@ -115,6 +157,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/dashboard/student/save-duration/content/', [StudentClassController::class, 'saveDurationStudyContent'])->name('dashboard.student.module.saveDurationStudyContent');
 
         Route::get('/dashboard/student/leaderboard/', [StudentClassController::class, 'showLeaderboard'])->name('dashboard.student.class.leaderboard');
+
+        Route::get('/dashboard/student/change-password/', [LoginController::class, 'changePasswordView'])->name('dashboard.student.changePassword');
+        Route::post('/dashboard/student/change-password/', [LoginController::class, 'changePassword'])->name('dashboard.student.changePassword.submit');
+
+        Route::get('/dashboard/student/pre-test', [StudentTestingController::class, 'showPretest'])->name('dashboard.student.pretest');
+        Route::post('/dashboard/student/pre-test/submit', [StudentTestingController::class, 'submitPretest'])->name('dashboard.student.pretest.submit');
+
+        Route::get('/dashboard/student/post-test', [StudentTestingController::class, 'showPosttest'])->name('dashboard.student.posttest');
+        Route::post('/dashboard/student/post-test/submit', [StudentTestingController::class, 'submitPosttest'])->name('dashboard.student.posttest.submit');
     });
 
     // Route::middleware('role:teacher')->group(function () {

@@ -22,8 +22,6 @@ class Classes extends Model
         return $this->belongsToMany(Student::class, 'class_student', 'class_id', 'student_id');
     }
 
-/*************  ✨ Windsurf Command ⭐  *************/
-/*******  0a936e8a-8d85-4eaf-bb09-231dc227a014  *******/
     public function modules()
     {
         return $this->belongsToMany(Module::class, 'class_module', 'class_id', 'module_id');
@@ -32,5 +30,16 @@ class Classes extends Model
     public function leaderboards()
     {
         return $this->hasMany(Leaderboard::class, 'class_id');
+    }
+
+    public function pairedTTests()
+    {
+        return $this->hasMany(PairedTTest::class, 'class_id');
+    }
+
+    // Relasi ke independent t-tests
+    public function independentTTests()
+    {
+        return $this->hasMany(IndependentTTest::class, 'class_id');
     }
 }
