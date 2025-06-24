@@ -22,6 +22,7 @@ class AdminController extends Controller
      */
     public function index()
     {
+        $user = auth()->user();
         // Ambil hanya admin yang belum dihapus (deleted_at == null)
         $admins = User::where('role', 'admin')
             ->whereNull('deleted_at')
@@ -29,6 +30,7 @@ class AdminController extends Controller
         
 
         return view('admin.users.admin', [
+            'user' => $user,
             'admins' => $admins,
             'activeMenu' => 'admin'
         ]);

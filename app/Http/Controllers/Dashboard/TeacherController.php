@@ -24,11 +24,13 @@ class TeacherController extends Controller
     public function index()
     {
         //
+        $user = auth()->user();
         $teachers = User::where('role', 'teacher')
             ->whereNull('deleted_at')
             ->get();
 
         return view('admin.users.teacher', [
+            'user' => $user,
             'teachers' => $teachers,
             'activeMenu' => 'teacher'
         ]);

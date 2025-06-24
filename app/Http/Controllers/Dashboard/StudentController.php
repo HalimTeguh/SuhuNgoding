@@ -23,11 +23,13 @@ class StudentController extends Controller
     public function index()
     {
         //
+        $user = auth()->user();
         $students = User::where('role', 'student')
             ->whereNull('deleted_at')
             ->get();
 
         return view('admin.users.student', [
+            'user' => $user,
             'students' => $students,
             'activeMenu' => 'student'
         ]);
