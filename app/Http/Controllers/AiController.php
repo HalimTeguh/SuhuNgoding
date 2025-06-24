@@ -7,17 +7,17 @@ use Illuminate\Support\Facades\Http;
 
 class AiController extends Controller
 {
-    //
-    public function generateSoalFromLLM(Request $request)
-    {
-        $request->validate([
-            'materi' => 'required|string'
-        ]);
+  //
+  public function generateSoalFromLLM(Request $request)
+  {
+    $request->validate([
+      'materi' => 'required|string'
+    ]);
 
-        $materi = $request->input('materi');
+    $materi = $request->input('materi');
 
-        // Prompt dengan Heredoc
-        $prompt = <<<PROMPT
+    // Prompt dengan Heredoc
+    $prompt = <<<PROMPT
 Kamu adalah seorang guru profesional yang berfokus pada pengajaran materi pemrograman untuk tingkat Sekolah Menengah Atas (SMA). Tugasmu adalah membuat soal latihan berbasis JSON sesuai materi yang diberikan.
 
 **Buat 10 soal** yang mencakup kelima level Taksonomi Bloom berikut:
@@ -90,38 +90,124 @@ Gunakan materi berikut sebagai dasar penyusunan soal:
 $materi
 PROMPT;
 
-        $promptJson = json_encode($prompt, JSON_UNESCAPED_UNICODE);
-        try {
-            $response = Http::timeout(90)
-                ->post('https://iswara-code-evaluation-system.onrender.com/askLlama', [
-                    'prompt' => $promptJson
-                ]);
+    $promptJson = json_encode($prompt, JSON_UNESCAPED_UNICODE);
 
-            if ($response->failed()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal menghubungi AI service.'
-                ], 500);
-            }
+    try {
+      $response = Http::timeout(90)
+        ->post('https://iswara-code-evaluation-system.onrender.com/askLlama', [
+          'prompt' => $promptJson
+        ]);
 
-            // Langsung ambil array dari response JSON
-            $data = $response->json('data');
-            if (!$data || !is_array($data)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Tidak ada hasil yang dikembalikan oleh AI.'
-                ], 422);
-            }
+      if ($response->failed()) {
+        return response()->json([
+          'success' => false,
+          'message' => 'Gagal menghubungi AI service.'
+        ], 500);
+      }
 
-            return response()->json([
-                'success' => true,
-                'data' => $data
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat memanggil API: ' . $e->getMessage()
-            ], 500);
-        }
+      // Langsung ambil array dari response JSON
+      $data = $response->json('data');
+      if (!$data || !is_array($data)) {
+        return response()->json([
+          'success' => false,
+          'message' => 'Tidak ada hasil yang dikembalikan oleh AI.'
+        ], 422);
+      }
+
+      return response()->json([
+        'success' => true,
+        'data' => $data
+      ]);
+    } catch (\Exception $e) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Terjadi kesalahan saat memanggil API: ' . $e->getMessage()
+      ], 500);
     }
+  }
+
+  public function generatePrePostTestQuestions(Request $request)
+  {
+    $request->validate([
+      'rangkuman' => 'required|string',
+    ]);
+
+    // Ambil teks rangkuman dari input biasa
+    $rangkumanText = $request->input('rangkuman');
+
+    // Prompt untuk AI
+    $prompt = <<<PROMPT
+Kamu adalah guru profesional pemrograman Python untuk siswa Sekolah Menengah Atas (SMA). Buatkan soal pretest dan posttest dalam bentuk soal pilihan ganda berdasarkan rangkuman materi berikut ini:
+
+$rangkumanText
+
+### Kriteria Soal:
+- Buat **25 soal pilihan ganda**, masing-masing mewakili 4 soal untuk setiap level **Taksonomi Bloom** (Remember, Understand, Apply, Analyze, Evaluate).
+
+###  Assessment Terms per Level (wajib digunakan untuk membuat soal):
+**Remember**:
+  - Mengidentifikasi, Mengenali implementasi, Mengingat konsep materi dan bagian kode yang dipelajari
+**Understand**:
+  - Memahami, Menerjemahkan, dan Menjelaskan konsep algoritma tertentu
+**Apply**:
+  - Mengimplementasikan konsep yang dipelajari dan Menyelesaikan studi kasus sederhana
+**Analyze**:
+  - Memecah tugas program menjadi beberapa komponen
+  - Mengidentifikasi komponen penting dan yang tidak penting
+**Evaluate**:
+  - Menentukan apakah sebuah kode dapat menyelesaikan studi kasus tertentu
+  - Menilai kualitas dan standar kode dengan benar
+
+**Format setiap soal**:
+  - `question`: pertanyaan dalam Bahasa Indonesia
+  - `reference_code`: contoh code python yang digunakan untuk menjawab pertanyaan (untuk tipe soal analyze, dapat digunakan untuk menjawab soal evaluate)
+  - `choices`: 4 pilihan jawaban (1 benar, 3 salah)
+    - Setiap pilihan memiliki:
+      - `answer`: isi jawaban
+      - `is_correct`: true/false
+
+- Semua soal harus relevan dengan konteks pengajaran Python dan mengukur pemahaman siswa berdasarkan level Bloom tersebut dan sesuai dengan rangkuman yang disertakan.
+
+### Format Output:
+Berikan jawaban **langsung dalam format JSON array**, **tanpa teks narasi**, dan **mulai dengan tanda kurung siku** ([).
+PROMPT;
+
+    // $promptJson = json_encode($prompt, JSON_UNESCAPED_UNICODE);
+
+
+    try {
+      $response = Http::timeout(seconds: 300)
+        ->post('https://iswara-code-evaluation-system.onrender.com/askLlama', [
+          'prompt' => $prompt
+        ]);
+
+      if ($response->failed()) {
+        return response()->json([
+          'success' => false,
+          'message' => 'Gagal menghubungi AI service.'
+        ], 500);
+      }
+
+      $data = $response->json('data');
+
+      dd($data);
+      if (!$data || !is_array($data)) {
+        return response()->json([
+          'success' => false,
+          'message' => 'Tidak ada hasil yang dikembalikan oleh AI.'
+        ], 422);
+      }
+
+
+      return response()->json([
+        'success' => true,
+        'data' => $data
+      ]);
+    } catch (\Exception $e) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Terjadi kesalahan saat memanggil API: ' . $e->getMessage()
+      ], 500);
+    }
+  }
 }

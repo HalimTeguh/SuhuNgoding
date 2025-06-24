@@ -578,3 +578,20 @@
     font-size: inherit;
     background-color: transparent;
 }
+
+.card-hover:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Membatasi 2 baris */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.quiz-question.border-danger {
+    box-shadow: 0 0 0 0.2rem rgba(255, 0, 0, 0.25);
+}

@@ -17,5 +17,6 @@ class VerifyCsrfToken extends Middleware
         '/test-docker',
         '/upload-image',
         '/dashboard/student/save-duration/content',
+        '/dashboard/admin/testing/quiz/generate',
     ];
 }

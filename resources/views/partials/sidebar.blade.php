@@ -1,5 +1,7 @@
 <!-- Menu -->
 
+
+
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
   <div class="app-brand demo my-6">
     <a href="index.html" class="app-brand-link">
@@ -93,46 +95,21 @@
       </ul>
     </li>
 
-    <!-- Settings -->
+    <!-- Testing -->
     <li class="menu-header small text-uppercase">
-      <span class="menu-header-text">Settings</span>
+      <span class="menu-header-text">Testing</span>
     </li>
     <!-- Pages -->
-    <li class="menu-item">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-dock-top"></i>
-        <div class="text-truncate" data-i18n="Account Settings">Account Settings</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item">
-          <a href="pages-account-settings-account.html" class="menu-link">
-            <div class="text-truncate" data-i18n="Account">Account</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a href="pages-account-settings-notifications.html" class="menu-link">
-            <div class="text-truncate" data-i18n="Notifications">Notifications</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a href="pages-account-settings-connections.html" class="menu-link">
-            <div class="text-truncate" data-i18n="Connections">Connections</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-    <li class="menu-item">
-      <a href="https://github.com/themeselection/sneat-html-admin-template-free/issues" target="_blank"
-        class="menu-link">
+    <li class="menu-item {{ $activeMenu === 'questionTest' ? 'active' : '' }}">
+      <a href="/dashboard/admin/testing/quiz" class="menu-link">
         <i class="menu-icon tf-icons bx bx-support"></i>
-        <div class="text-truncate" data-i18n="Support">Support</div>
+        <div class="text-truncate" data-i18n="questionTest">Question Pre/Post test</div>
       </a>
     </li>
-    <li class="menu-item">
-      <a href="https://demos.themeselection.com/sneat-bootstrap-html-admin-template/documentation/" target="_blank"
-        class="menu-link">
+    <li class="menu-item {{ $activeMenu === 'testingEnvirontment' ? 'active' : '' }}">
+      <a href="/dashboard/admin/testing/setting" class="menu-link">
         <i class="menu-icon tf-icons bx bx-file"></i>
-        <div class="text-truncate" data-i18n="Documentation">Documentation</div>
+        <div class="text-truncate" data-i18n="testingEnvirontment">Testing Environtment</div>
       </a>
     </li>
   </ul>
@@ -140,6 +117,9 @@
 
   {{-- Sidebar Student --}}
   @if(Auth::user()->role == 'student')
+  @php
+  $tTest = $user->student->tTests()->first();
+  @endphp
   <ul class="menu-inner py-1">
     <!-- Dashboards -->
     <li class="menu-item {{ $activeMenu === 'dashboard' ? 'active' : '' }}">
@@ -154,8 +134,7 @@
       <span class="menu-header-text">Your Environtment</span>
     </li>
     <!-- Pages -->
-    <li
-      class="menu-item {{ $activeMenu === 'class' || $activeMenu === 'learderboard'  ? 'active open' : '' }}">
+    <li class="menu-item {{ $activeMenu === 'class' || $activeMenu === 'learderboard'  ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-dock-top"></i>
         <div class="text-truncate" data-i18n="Learning">Learning</div>
@@ -166,31 +145,46 @@
             <div class="text-truncate" data-i18n="class">Class</div>
           </a>
         </li>
+        @if($tTest && $tTest->class_type == 'experiment')
         <li class="menu-item {{ $activeMenu === 'learderboard' ? 'active' : '' }}">
-          <a href="/dashboard/admin/users/learderboard" class="menu-link">
+          <a href="{{ route('dashboard.student.class.leaderboard') }}" class="menu-link">
             <div class="text-truncate" data-i18n="learderboard">Leaderboard</div>
           </a>
         </li>
-        {{-- <li class="menu-item {{ $activeMenu === 'student' ? 'active' : '' }}">
-          <a href="/dashboard/admin/users/student" class="menu-link">
-            <div class="text-truncate" data-i18n="Student">Your Test</div>
-          </a>
-        </li> --}}
+        @endif
+
       </ul>
     </li>
 
-
-    <!-- Settings -->
+    <!-- Testing -->
     <li class="menu-header small text-uppercase">
-      <span class="menu-header-text">Settings</span>
+      <span class="menu-header-text">Penilaian</span>
     </li>
     <!-- Pages -->
-    <li class="menu-item {{ $activeMenu === 'account' ? 'active' : '' }}">
+    <li class="menu-item {{ $activeMenu === 'pretest' ? 'active' : '' }}">
+      <a href="/dashboard/student/pre-test" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-file"></i>
+        <div class="text-truncate" data-i18n="pretest">Pre-test</div>
+      </a>
+    </li>
+    <li class="menu-item {{ $activeMenu === 'posttest' ? 'active' : '' }}">
+      <a href="/dashboard/student/post-test" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-file"></i>
+        <div class="text-truncate" data-i18n="posttest">Post-test</div>
+      </a>
+    </li>
+
+    <!-- Settings -->
+    {{-- <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">Settings</span>
+    </li> --}}
+    <!-- Pages -->
+    {{-- <li class="menu-item {{ $activeMenu === 'account' ? 'active' : '' }}">
       <a href="#" class="menu-link">
         <i class="menu-icon tf-icons bx bx-home-smile"></i>
         <div class="text-truncate" data-i18n="Account">Account</div>
       </a>
-    </li>
+    </li> --}}
 
   </ul>
   @endif

@@ -20,4 +20,9 @@ class ModuleContent extends Model
     {
         return $this->hasMany(Quiz::class, 'content_id');
     }
+
+    public function controlVersion()
+    {
+        return $this->hasOne(ControlModuleContent::class);
+    }
 }

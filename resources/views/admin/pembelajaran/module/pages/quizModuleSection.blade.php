@@ -7,6 +7,7 @@
                 <!-- Navigasi Kiri -->
                 <div class="col-md-2 me-4 d-flex align-self-start">
                     <div class="bg-primary rounded w-100">
+
                         <div class="rounded p-3 w-100" style="background-color: rgba(255, 255, 255, 0.4);">
                             <input type="hidden" id="currentContent" name="currentContent" >
                             <ul class="list-group w-100 border-0" id="contentList">
@@ -20,8 +21,12 @@
                                 </li>
                                 @endforeach
                             </ul>
+                            <button type="button" class="btn btn-outline-primary bg-white mt-4 w-100" onclick="exportCurrentQuiz()">Export Quiz</button>
                         </div>
+
+
                     </div>
+
                 </div>
 
                 <!-- Konten Kanan -->
@@ -112,6 +117,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
 
 <script>
 let currentQuizzes = [];
@@ -210,44 +216,99 @@ async function initCodeMirror() {
     });
 }
 
+let pyodide = null;
+async function initRunCode() {
+    // Load Pyodide jika belum
+    pyodide = await loadPyodide();
 
-function initRunCode() {
-    window.runCode = function() {
-        let userCode = codeEditor.getValue();
-        let outputContainer = document.getElementById("codeOutput");
-        let spinner = document.getElementById("loadingSpinner");
-        let codeOutputInput = document.getElementById("codeOutputInput");
-
+    window.runCode = async function () {
+        const userCode = codeEditor.getValue();
+        const outputContainer = document.getElementById("codeOutput");
+        const spinner = document.getElementById("loadingSpinner");
+        const codeOutputInput = document.getElementById("codeOutputInput");
 
         if (!userCode.trim()) {
             outputContainer.innerText = "Error: No code provided!";
             return;
         }
 
-        spinner.style.display = "inline"; // Tampilkan loading
+        spinner.style.display = "inline";
+        outputContainer.innerText = ""; // Clear output sebelumnya
 
-        fetch("/execute", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code: userCode })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                outputContainer.innerText = "Error:\n" + data.error;
-            } else {
-                outputContainer.innerText = data.output;
-                codeOutputInput.value = data.output; // Save output to hidden input
-            }
-        })
-        .catch(error => {
-            outputContainer.innerText = "Execution error!";
-        })
-        .finally(() => {
-            spinner.style.display = "none"; // Sembunyikan loading
-        });
+        try {
+            // Buat Python script gabungan
+            const wrappedCode = `
+import sys
+from io import StringIO
+
+output = StringIO()
+sys.stdout = output
+sys.stderr = output
+
+try:
+${userCode.split('\n').map(line => '    ' + line).join('\n')}
+except Exception as e:
+    print("Runtime Error:", e)
+
+sys.stdout = sys.__stdout__
+sys.stderr = sys.__stderr__
+result = output.getvalue()
+            `;
+
+            await pyodide.runPythonAsync(wrappedCode);
+            const result = pyodide.globals.get("result");
+
+            outputContainer.innerText = result || "(No output)";
+            codeOutputInput.value = result || "";
+
+        } catch (err) {
+            outputContainer.innerText = "Error:\n" + err;
+        } finally {
+            spinner.style.display = "none";
+        }
     };
 }
+
+
+// function initRunCode() {
+//     window.runCode = function() {
+//         let userCode = codeEditor.getValue();
+//         let outputContainer = document.getElementById("codeOutput");
+//         let spinner = document.getElementById("loadingSpinner");
+//         let codeOutputInput = document.getElementById("codeOutputInput");
+
+
+//         if (!userCode.trim()) {
+//             outputContainer.innerText = "Error: No code provided!";
+//             return;
+//         }
+
+//         spinner.style.display = "inline"; // Tampilkan loading
+
+//         fetch("/execute", {
+//             method: "POST",
+//             headers: { "Content-Type": "application/json" },
+//             body: JSON.stringify({ code: userCode })
+//         })
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.error) {
+//                 outputContainer.innerText = "Error:\n" + data.error;
+//             } else {
+//                 outputContainer.innerText = data.output;
+//                 codeOutputInput.value = data.output; // Save output to hidden input
+//             }
+//         })
+
+//         .catch(error => {
+//             outputContainer.innerText = "Execution error!";
+//         })
+
+//         .finally(() => {
+//             spinner.style.display = "none"; // Sembunyikan loading
+//         });
+//     };
+// }
 
 function loadQuizzes(moduleId, contentId) {
     fetch(`/dashboard/admin/pembelajaran/module/${moduleId}/content/${contentId}/quiz`)
@@ -708,6 +769,61 @@ function showConfirmationModal({ title = "Konfirmasi", message = "Apakah Anda ya
     // Tampilkan modal
     const confirmModal = new bootstrap.Modal(document.getElementById("confirmModal"));
     confirmModal.show();
+}
+
+function exportCurrentQuiz() {
+    if (!currentQuizzes || currentQuizzes.length === 0) {
+        alert("Tidak ada quiz yang bisa diekspor.");
+        return;
+    }
+
+    let htmlContent = "<h2>Daftar Soal</h2>";
+    
+    currentQuizzes.forEach((quiz, index) => {
+        htmlContent += `<p>${quiz.question}</p>`;
+
+        // Multiple Choice
+        if (quiz.type === 'multiple_choice') {
+            if (quiz.choices && quiz.choices.length > 0) {
+                const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
+                htmlContent += "<ul style='list-style-type: none; padding-left: 0'>";
+                quiz.choices.forEach((choice, idx) => {
+                    const label = labels[idx] || String.fromCharCode(65 + idx); // fallback
+                    htmlContent += `<li><strong>${label}.</strong> ${choice.choice_text}</li>`;
+                });
+                htmlContent += "</ul>";
+            }
+        }
+
+        // Code Type
+        if (quiz.type === 'code') {
+            htmlContent += `<p><strong>Test Case:</strong></p>`;
+            htmlContent += `<pre style="background:#f4f4f4;padding:10px">${quiz.code?.[0]?.test_cases || ''}</pre>`;
+            htmlContent += `<p><strong>Expected Output:</strong></p>`;
+            htmlContent += `<pre style="background:#f4f4f4;padding:10px">${quiz.code?.[0]?.expected_output || ''}</pre>`;
+        }
+
+        htmlContent += `<hr>`;
+    });
+
+    const header = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+              xmlns:w='urn:schemas-microsoft-com:office:word' 
+              xmlns='http://www.w3.org/TR/REC-html40'>
+        <head><meta charset='utf-8'><title>Export Quiz</title></head><body>`;
+    const footer = "</body></html>";
+    const fullHTML = header + htmlContent + footer;
+
+    const blob = new Blob(['\ufeff', fullHTML], {
+        type: 'application/msword'
+    });
+
+    const downloadLink = document.createElement("a");
+    downloadLink.href = URL.createObjectURL(blob);
+    downloadLink.download = `quiz_${currentContentId || 'export'}.doc`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
 }
 
 
