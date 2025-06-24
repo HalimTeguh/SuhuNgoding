@@ -33,7 +33,7 @@
                         </div>
                     </div>
                     <div class="card-body pt-4">
-                        <ul id="leaderboardList" class="p-0 m-0">
+                        <ul id="leaderboardList" class="p-0 m-0 mx-8">
                             <!-- Data leaderboard akan diisi oleh JS -->
                         </ul>
                     </div>
@@ -55,7 +55,7 @@
                                     <th>Status</th>
                                     <th>Score</th>
                                     <th>Study Duration</th>
-                                    <th>Last Submitted</th>
+                                    <th>Updated At</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -68,6 +68,8 @@
                                         <span class="badge bg-success">Lulus</span>
                                         @elseif($summary->status === 'Tidak Lulus')
                                         <span class="badge bg-danger">Tidak Lulus</span>
+                                        @elseif($summary->study_content_total_duration > 0 && $summary->quiz_attemptz_count == 0)
+                                        <span class="badge bg-info">Sedang Belajar</span>
                                         @else
                                         <span class="badge bg-secondary">Belum</span>
                                         @endif
@@ -75,8 +77,8 @@
                                     <td>{{ $summary->total_score ?? '-' }}</td>
                                     <td>{{ gmdate("H:i:s", $summary->study_content_total_duration) }}</td>
                                     <td>
-                                        {{ $summary->quiz_submitted_at
-                                        ? \Carbon\Carbon::parse($summary->quiz_submitted_at)->format('d M Y H:i')
+                                        {{ $summary->created_at
+                                        ? \Carbon\Carbon::parse($summary->updated_at)->format('d M Y H:i')
                                         : '-' }}
                                     </td>
                                 </tr>

@@ -31,4 +31,15 @@ class Module extends Model
     {
         return $this->hasMany(Leaderboard::class, 'module_id');
     }
+
+    public function pairedTTests()
+    {
+        return $this->hasMany(PairedTTest::class, 'module_id');
+    }
+
+    // Relasi ke independent t-tests
+    public function independentTTests()
+    {
+        return $this->hasMany(IndependentTTest::class, 'module_id');
+    }
 }

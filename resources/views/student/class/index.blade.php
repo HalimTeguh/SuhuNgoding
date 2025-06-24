@@ -2,10 +2,27 @@
 
 @section('content')
 
+@php
+$tTest = $user->student->tTests()->first();
+@endphp
+
 <!-- Content wrapper -->
 <div class="content-wrapper">
     <!-- Content -->
 
+    @if($tTest && $tTest->class_type == null)
+    <div class="container-xxl flex-grow-1 container-p-y">
+        <div class="card">
+            <div class=" card-body">
+                <div class="alert alert-warning">
+                    Tipe kelas anda belum di bagi, pastikan anda telah mengerjakan <strong>pretest</strong>. Hubungi <strong>Admin atau Guru</strong>
+                    untuk
+                    informasi lebih lanjut
+                </div>
+            </div>
+        </div>
+    </div>
+    @else
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="row">
             @foreach ($classes as $class)
@@ -31,7 +48,8 @@
                             <p class="mb-0">{{ Str::limit($class->description, 80) }}</p>
                         </div>
                         <div>
-                            <a href="{{ route('dashboard.student.class.show', $class->id) }}" class="btn btn-m btn-primary shadow">
+                            <a href="{{ route('dashboard.student.class.show', $class->id) }}"
+                                class="btn btn-m btn-primary shadow">
                                 Masuk Kelas
                             </a>
                         </div>
@@ -40,8 +58,8 @@
             </div>
             @endforeach
         </div>
-
     </div>
+    @endif
     <!-- / Content -->
     <div class="content-backdrop fade"></div>
 </div>

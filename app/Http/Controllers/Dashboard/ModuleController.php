@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\ControlModuleContent;
 use App\Models\Module;
 use App\Models\ModuleContent;
 use App\Models\Quiz;
@@ -30,6 +31,8 @@ class ModuleController extends Controller
     public function index()
     {
         //
+        $user = auth()->user();
+
         $modules = Module::whereNull('deleted_at')
             ->get();
 
@@ -38,6 +41,7 @@ class ModuleController extends Controller
             ->get();
 
         return view('admin.pembelajaran.module.module', [
+            'user' => $user,
             'modules' => $modules,
             'teachers' => $teachers,
             'activeMenu' => 'module'
@@ -98,6 +102,14 @@ class ModuleController extends Controller
                 $content->module_id = $module->id;
                 $content->title = "Pertemuan $i";
                 $content->save();
+
+                // Buat ControlModuleContent yang berelasi
+                $control = new ControlModuleContent ();
+                $control->module_content_id = $content->id;
+                $control->material_link = null; // Default null, bisa diedit nanti
+                $control->test_link = null;
+                $control->notes = "Materi pertemuan $i"; // opsional
+                $control->save();
 
                 // Buat minimal 1 quiz untuk setiap content
                 $quiz = new Quiz();
@@ -162,6 +174,8 @@ class ModuleController extends Controller
      */
     public function show(string $id)
     {
+        $user = auth()->user();
+
         $module = Module::with('teacher.user')->findOrFail($id);
 
         $contents = ModuleContent::where('module_id', $id)->get();
@@ -171,6 +185,7 @@ class ModuleController extends Controller
             ->get();
 
         return view('admin.pembelajaran.module.detailModule', [
+            'user' => $user,
             'module' => $module,
             'contents' => $contents,
             'allTeacher' => $allTeachers,
@@ -193,6 +208,23 @@ class ModuleController extends Controller
             'title' => $content->title,
             'summary' => $content->summary,
             'content' => $content->content
+        ]);
+    }
+
+    public function getModuleControl(string $moduleId, string $contentId)
+    {
+        $controlContent = ControlModuleContent::where('module_content_id', $contentId)
+            ->first();
+
+        if (!$controlContent) {
+            return response()->json(['error' => 'Content not found'], 404);
+        }
+
+        return response()->json([
+            'id' => $controlContent->id,
+            'material_link' => $controlContent->material_link,
+            'test_link' => $controlContent->test_link,
+            'notes' => $controlContent->notes
         ]);
     }
 
@@ -354,7 +386,7 @@ class ModuleController extends Controller
         return response()->json(['success' => true, 'message' => 'Gambar berhasil direset']);
     }
 
-    
+
     public function convertPdf(Request $request)
     {
         $request->validate([

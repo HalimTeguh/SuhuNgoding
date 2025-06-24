@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Authentication;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
@@ -76,5 +78,65 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/')->with('success', 'Anda telah logout.');
+    }
+
+    public function changePasswordView()
+    {
+        $user = auth()->user();
+        return view('authentication.changePassword', [
+            'user' => $user,
+            'activeMenu' => 'dashboard'
+        ]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $user = auth()->user();
+
+        $usermodel = User::find($user->id);
+
+        if (!$usermodel) {
+            abort(403, 'User tidak ditemukan.');
+        }
+
+        // Validasi input
+        $validatedData = $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'old_password' => 'required',
+            'new_password' => 'required|min:8|confirmed',
+        ]);
+
+        // Verifikasi email agar sesuai dengan user login
+        if ($validatedData['email'] !== $usermodel->email) {
+            return back()->withErrors(['email' => 'Email tidak cocok dengan akun kamu.']);
+        }
+
+        // Verifikasi password lama
+        if (!Hash::check($validatedData['old_password'], $usermodel->password)) {
+            return back()->withErrors(['old_password' => 'Password lama salah.']);
+        }
+
+        // Update password
+        $usermodel->password = Hash::make($validatedData['new_password']);
+        $usermodel->save();
+
+        // Buat toast
+        $toast = [
+            'type' => 'success',
+            'title' => 'Password Diperbarui',
+            'message' => 'Password kamu berhasil diperbarui.',
+            'time' => now()->diffForHumans()
+        ];
+
+        // Redirect sesuai role
+        if ($usermodel->role === 'admin') {
+            return redirect()->route('dashboard.admin')->with('toasts', [$toast]);
+        } elseif ($usermodel->role === 'teacher') {
+            return redirect()->route('dashboard.teacher')->with('toasts', [$toast]);
+        } elseif ($usermodel->role === 'student') {
+            return redirect()->route('dashboard.student')->with('toasts', [$toast]);
+        } else {
+            return back()->with('toasts', [$toast]);
+        }
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Classes;
+use App\Models\ControlModuleContent;
 use App\Models\Leaderboard;
 use App\Models\Module;
 use App\Models\ModuleContent;
@@ -11,6 +12,7 @@ use App\Models\QuizChoice;
 use App\Models\QuizCode;
 use App\Models\StudentAnswers;
 use App\Models\StudentModulSummary;
+use App\Models\TTesting;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -88,9 +90,70 @@ class StudentClassController extends Controller
      */
     public function show(string $id, Request $request)
     {
-        $class = Classes::with(['modules.contents', 'students'])->findOrFail($id);
+        $user = auth()->user();
+        $student = $user->student;
 
-        // Ambil data leaderboard per modul
+        $class = Classes::with(['modules.contents', 'students', 'teacher.user'])->findOrFail($id);
+
+        // Cek apakah siswa masuk ke dalam TTesting untuk kelas ini
+        $testingData = TTesting::where('class_id', $class->id)
+            ->where('student_id', $student->id)
+            ->first();
+
+        $classType = $testingData->class_type ?? 'experiment'; // default ke experiment jika tidak ada data
+
+        // Data umum
+        $studentCount = $class->students->count();
+        $moduleCount = $class->modules->count();
+        $teacherName = $class->teacher->user->name ?? '-';
+
+        if ($classType === 'control') {
+            // Untuk kelas kontrol: hanya tampilkan ControlModuleContent
+            foreach ($class->modules as $module) {
+                foreach ($module->contents as $content) {
+                    // Ambil data dari control
+                    $controlContent = ControlModuleContent::where('module_content_id', $content->id)->first();
+                    if ($controlContent) {
+                        $content->control_data = [
+                            'material_link' => $controlContent->material_link,
+                            'test_link' => $controlContent->test_link,
+                            'notes' => $controlContent->notes,
+                        ];
+                    }
+
+                    // Ambil progres siswa
+                    $summary = StudentModulSummary::where('student_id', $student->id)
+                        ->where('content_id', $content->id)
+                        ->latest()
+                        ->first();
+
+                    $content->progress_status = $summary
+                        ? (
+                            !is_null($summary->total_score)
+                            ? ($summary->status === 'Lulus'
+                                ? "Lulus ({$summary->total_score}%)"
+                                : "Tidak Lulus ({$summary->total_score}%)")
+                            : ($summary->study_content_total_duration > 0
+                                ? "Sedang Belajar"
+                                : "Belum")
+                        )
+                        : "Belum";
+                }
+            }
+
+            return view('student.class.detailClass', [
+                'user' => $user,
+                'class' => $class,
+                'modules' => $class->modules,
+                'studentCount' => $studentCount,
+                'moduleCount' => $moduleCount,
+                'teacherName' => $teacherName,
+                'classType' => $classType,
+                'activeMenu' => 'class',
+            ]);
+        }
+
+        // Untuk kelas eksperimen
         $leaderboards = [];
         foreach ($class->modules as $module) {
             $leaderboards[$module->id] = Leaderboard::with('student.user')
@@ -98,22 +161,10 @@ class StudentClassController extends Controller
                 ->where('module_id', $module->id)
                 ->orderByDesc('point')
                 ->get();
+
+            // Hitung Bloom levels juga nanti
         }
 
-        $student = auth()->user()->student;
-
-        $modules = $class->modules;
-
-        // Mengambil data jumlah siswa dalam kelas
-        $studentCount = $class->students()->count();
-
-        // Mengambil jumlah modul dalam kelas
-        $moduleCount = $class->modules()->count();
-
-        // Mengambil nama guru yang mengajar
-        $teacherName = $class->teacher->user->name;
-
-        // Mengisi status progress setiap konten modul
         foreach ($class->modules as $module) {
             foreach ($module->contents as $content) {
                 $summary = StudentModulSummary::where('student_id', $student->id)
@@ -121,48 +172,47 @@ class StudentClassController extends Controller
                     ->latest()
                     ->first();
 
-                if ($summary) {
-                    if (!is_null($summary->total_score)) {
-                        // Jika sudah ada nilai quiz
-                        $content->progress_status = ($summary->status === 'Lulus')
+                $content->progress_status = $summary
+                    ? (
+                        !is_null($summary->total_score)
+                        ? ($summary->status === 'Lulus'
                             ? "Lulus ({$summary->total_score}%)"
-                            : "Tidak Lulus ({$summary->total_score}%)";
-                    } elseif ($summary->study_content_total_duration > 0) {
-                        // Jika hanya membaca materi
-                        $content->progress_status = "Sedang Belajar";
-                    } else {
-                        // Jika tidak ada progress sama sekali
-                        $content->progress_status = "Belum";
-                    }
-                } else {
-                    $content->progress_status = "Belum";
-                }
+                            : "Tidak Lulus ({$summary->total_score}%)")
+                        : ($summary->study_content_total_duration > 0
+                            ? "Sedang Belajar"
+                            : "Belum")
+                    )
+                    : "Belum";
             }
         }
 
-        // Mengambil Bloom Levels untuk semua modul
+        // Bloom level untuk eksperimen
         $bloomLevels = [];
         foreach ($class->modules as $module) {
-            $bloomLevels[$module->id] = $this->calculateBloomLevels($student->id, $module->id); // Panggil dengan student ID dan module ID
+            $bloomLevels[$module->id] = $this->calculateBloomLevels($student->id, $module->id);
         }
 
-
         return view('student.class.detailClass', [
-            'user' => $student,
+            'user' => $user,
             'class' => $class,
             'modules' => $class->modules,
             'leaderboards' => $leaderboards,
+            'bloomLevels' => $bloomLevels,
             'studentCount' => $studentCount,
             'moduleCount' => $moduleCount,
             'teacherName' => $teacherName,
-            'bloomLevels' => $bloomLevels, // Kirimkan data Bloom levels untuk semua modul
-            'activeMenu' => 'class'
+            'classType' => $classType,
+            'activeMenu' => 'class',
         ]);
     }
 
 
+
+
     public function showContent(string $classId, string $moduleId)
     {
+        $user = auth()->user();
+
         // Ambil data kelas berdasarkan classId
         $class = Classes::findOrFail($classId);
 
@@ -177,7 +227,8 @@ class StudentClassController extends Controller
 
         // Kembalikan view dengan data yang diperlukan
         return view('student.class.moduleContent', [
-            'user' => $student,
+            'user' => $user,
+            'student' => $student,
             'listContent' => $listContent,
             'moduleContent' => $moduleContent,
             'class' => $class,  // Kirimkan data kelas ke view
@@ -187,6 +238,8 @@ class StudentClassController extends Controller
 
     public function showQuizContent(string $classId, string $moduleId)
     {
+        $user = auth()->user();
+
         $class = Classes::findOrFail($classId);
 
         $student = auth()->user()->student;
@@ -199,7 +252,7 @@ class StudentClassController extends Controller
             ->get();
 
         return view('student.class.moduleQuiz', [
-            'user' => $student,
+            'user' => $user,
             'class' => $class,
             'moduleContent' => $moduleContent,
             'quizList' => $quizzes,
@@ -216,6 +269,7 @@ class StudentClassController extends Controller
         $submittedAt = Carbon::now('Asia/Jakarta');
         $studentAnswers = collect(); // 🔥 Gunakan collect() untuk array + metode koleksi Laravel
         $totalPoints = 0;  // Untuk menyimpan total poin yang diperoleh siswa
+
 
         // Multiple Choice
         foreach ($quizAnswers as $quizId => $choiceId) {
@@ -376,8 +430,8 @@ class StudentClassController extends Controller
 
         return redirect(route('dashboard.student.module.quiz.result', [
             'classId' => $classId,
-            'module' => $modulContent,
-            'summardy' => $summary
+            'moduleId' => $modulContent->id,
+            'summaryId' => $summary->id
         ]))->with('toasts', [
             [
                 'type' => 'success',
@@ -429,7 +483,7 @@ class StudentClassController extends Controller
                 'study_content_total_duration' => (int) $request->duration,
                 'quiz_attempts_total_duration' => 0,
                 'total_score' => null,
-                'status' => null,
+                'status' => 'Sedang Belajar',
                 'quiz_submitted_at' => null,
                 'quiz_attempts_count' => 1
             ]);
@@ -449,6 +503,8 @@ class StudentClassController extends Controller
 
     public function showResultQuiz(string $classId, string $moduleId, string $summaryId)
     {
+        $user = auth()->user();
+
         $student = auth()->user()->student;
         $class = Classes::findOrFail($classId);
         $moduleContent = ModuleContent::findOrFail($moduleId);
@@ -478,9 +534,9 @@ class StudentClassController extends Controller
         });
 
         return view('student.class.quizResult', [
+            'user' => $user,
             'class' => $class,
             'module' => $moduleContent,
-            'user' => $student,
             'moduleContent' => $moduleContent,
             'summary' => $summary,
             'quizList' => $quizAnswers,
@@ -555,7 +611,9 @@ class StudentClassController extends Controller
 
     public function showLeaderboard()
     {
-        $student = auth()->user()->student;
+        $user = auth()->user();
+
+        $student = $user->student;
 
         // Ambil semua kelas yang diikuti siswa (beserta modul & contents)
         $classes = Classes::whereHas('students', function ($query) use ($student) {
@@ -588,6 +646,7 @@ class StudentClassController extends Controller
             ->get();
 
         return view('student.class.leaderboard', [
+            'user' => $user,
             'classes' => $classes,
             'leaderboards' => $leaderboards,
             'summaries' => $summaries,

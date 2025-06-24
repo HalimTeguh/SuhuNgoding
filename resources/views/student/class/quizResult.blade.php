@@ -28,7 +28,7 @@
                         </div>
                         <hr class="my-1">
                         <div class="card-body">
-                            <h5>{{ $quiz->question }}</h5>
+                            <h5>{!! $quiz->question !!}</h5>
 
                             @if ($quiz->type === 'multiple_choice')
                             @foreach ($quiz->choices as $choice)
@@ -62,15 +62,26 @@
                                 <pre class="bg-light border rounded p-2">{{ $answerData->feedback }}</pre>
                                 @endif
                             </div>
+                            @else
+                            <div class="mt-3">
+                                <span class="badge bg-label-danger ">Anda tidak menjawab</span>
+                            </div>
                             @endif
                             @elseif($quiz->type === 'code')
+                            @if($answers->isEmpty())
+                                <div class="mt-3">
+                                <textarea class="code-editor-student" readonly>{{ $answer->answer_text ?? 'Anda tidak menjawab' }}</textarea>
+
+                                    <span class="badge bg-label-danger mt-3">Anda tidak menjawab</span>
+                                </div>
+                            @endif
                             @foreach ($answers as $answer)
                             @php
                             $expectedCode = $quiz->code->first()->test_cases;
                             @endphp
                             <div class="mb-3">
                                 <label><strong>Jawaban Kamu:</strong></label>
-                                <textarea class="code-editor-student" readonly>{{ $answer->answer_text }}</textarea>
+                                <textarea class="code-editor-student" readonly>{{ $answer->answer_text ?? 'Anda tidak menjawab' }}</textarea>
 
                                 <label class="mt-3"><strong>Expected Code:</strong></label>
                                 <textarea class="code-editor-expected" readonly>{{ $expectedCode }}</textarea>
@@ -107,8 +118,6 @@
                             @endforeach
                             @endif
 
-
-
                         </div>
                     </div>
                     @endforeach
@@ -131,7 +140,7 @@
                         </div>
                         @endif
                         <div class="card-body text-center">
-                            <h3 class="mt-3">{{ $summary->total_score }}%</h3>
+                            <h3 class="mt-3">{{ $summary->total_score ?? 0 }}</h3>
                             @if($summary->total_score >= 70)
                             <span class="badge bg-success">Lulus</span>
                             @else
@@ -154,19 +163,18 @@
                                 Lanjutkan <i class="bx bx-send ms-2"></i>
                             </a>
                             @else
-                            <button class="btn btn-secondary px-4" disabled>
-                                Lanjutkan <i class="bx bx-send ms-2"></i>
-                            </button>
+                            <a href="/dashboard/student/class/{{ $class->id }}/module/{{ $module->id}}"
+                                class="btn btn-success px-4">
+                                Belajar Kembali <i class="bx bx-send ms-2"></i>
+                            </a>
                             <p class="text-danger mt-2 mb-0">
                                 Kamu harus lulus quiz terlebih dahulu untuk melanjutkan ke materi berikutnya.
                             </p>
                             @endif
                         </div>
                     </div>
-
                 </div>
             </div>
-
         </div>
     </div>
 </div>
@@ -188,6 +196,5 @@
         });
     });
 </script>
-
 
 @endsection
