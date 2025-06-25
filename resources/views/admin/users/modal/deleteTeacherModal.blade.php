@@ -22,3 +22,22 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteModal = document.getElementById('deleteTeacher');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const teacherId = button.getAttribute('data-id');
+            const teacherName = button.getAttribute('data-name');
+
+            // Ganti teks konfirmasi
+            const nameDisplay = deleteModal.querySelector('#deleteTeacherName');
+            nameDisplay.textContent = teacherName;
+
+            // Ganti form action
+            const form = deleteModal.querySelector('#deleteTeacherForm');
+            form.action = `/dashboard/admin/users/teacher/s/${teacherId}`;
+        });
+    });
+</script>
