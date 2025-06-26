@@ -7,7 +7,7 @@
     <!-- Content -->
 
     <div class="container-xxl flex-grow-1 container-p-y">
-        <div class="row g-6 mb-6">
+        {{-- <div class="row g-6 mb-6">
             <div class="col-sm-6 col-xl-3">
                 <div class="card">
                     <div class="card-body">
@@ -92,7 +92,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
         <!-- Basic Bootstrap Table -->
         <div class="card">
             <div class="w-100">

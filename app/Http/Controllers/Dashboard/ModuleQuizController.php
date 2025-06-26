@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\ModuleContent;
 use App\Models\Quiz;
 use App\Models\QuizChoice;
 use App\Models\QuizCode;
@@ -213,12 +214,112 @@ class ModuleQuizController extends Controller
         }
     }
 
+    public function importQuizFromJsonText(Request $request)
+    {
+        $request->validate([
+            'quiz_json' => 'required|string',
+            'content_id' => 'required|exists:module_contents,id',
+        ]);
+
+        $jsonContent = json_decode($request->input('quiz_json'), true);
+
+        if (!is_array($jsonContent)) {
+            return redirect()->back()->with('toasts', [[
+                'type' => 'error',
+                'title' => 'Gagal',
+                'message' => 'Format JSON tidak valid. Pastikan struktur sudah benar dan tidak kosong.',
+                'time' => now()->diffForHumans()
+            ]]);
+        }
+
+        $content = ModuleContent::findOrFail($request->input('content_id'));
+
+        DB::beginTransaction();
+        try {
+            $content->quizzes()->delete();
+
+            $levelPoints = [
+                'Mengingat' => 1,
+                'Memahami' => 2,
+                'Menerapkan' => 3,
+                'Menganalisis' => 4,
+                'Mengevaluasi' => 5
+            ];
+
+            $levelMap = [
+                'Mengingat' => 'remember',
+                'Memahami' => 'understand',
+                'Menerapkan' => 'apply',
+                'Menganalisis' => 'analyze',
+                'Mengevaluasi' => 'evaluate'
+            ];
+
+            foreach ($jsonContent as $quizData) {
+                $levelId = $quizData['level'] ?? 'Mengingat';
+                $engLevel = $levelMap[$levelId] ?? 'remember';
+                $point = $levelPoints[$levelId] ?? 1;
+
+                $questionText = $quizData['question'] ?? '-';
+
+                if (!empty($quizData['reference_code']) && $engLevel !== 'apply') {
+                    $referenceCodeDiv = '<div class="referensi_code"><pre>' . htmlentities($quizData['reference_code']) . '</pre></div>';
+                    $questionText .= '<br>' . $referenceCodeDiv;
+                }
+
+                $quiz = Quiz::create([
+                    'content_id' => $content->id,
+                    'question' => $questionText,
+                    'type' => $engLevel === 'apply' ? 'code' : 'multiple_choice',
+                    'bloom_level' => $engLevel,
+                    'point' => $point
+                ]);
+
+                if ($engLevel === 'apply') {
+                    $quiz->code()->create([
+                        'quiz_id' => $quiz->id,
+                        'test_cases' => $quizData['reference_code'] ?? '',
+                        'expected_output' => $quizData['output'] ?? '',
+                        'language' => 'python',
+                        'feedback' => $quizData['feedback'] ?? 'Output sesuai dengan format yang diminta.'
+                    ]);
+                } else {
+                    foreach ($quizData['choices'] ?? [] as $choice) {
+                        $quiz->choices()->create([
+                            'quiz_id' => $quiz->id,
+                            'choice_text' => $choice['answer'] ?? '-',
+                            'is_correct' => $choice['is_correct'] ?? false,
+                            'feedback' => $choice['feedback'] ?? ''
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('toasts', [[
+                'type' => 'success',
+                'title' => 'Berhasil',
+                'message' => "Quiz berhasil diimpor ke {$content->title}",
+                'time' => now()->diffForHumans()
+            ]]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('toasts', [[
+                'type' => 'error',
+                'title' => 'Gagal',
+                'message' => "Gagal mengimpor quiz: " . $e->getMessage(),
+                'time' => now()->diffForHumans()
+            ]]);
+        }
+    }
+
+
     public function deleteOption(Request $request, $optionId)
     {
         try {
             // Cari opsi berdasarkan ID
             $option = QuizChoice::find($optionId);
-    
+
             // Jika opsi tidak ditemukan, kirim respons error
             if (!$option) {
                 return response()->json([
@@ -226,10 +327,10 @@ class ModuleQuizController extends Controller
                     'message' => 'Opsi tidak ditemukan.'
                 ], 404);
             }
-    
+
             // Hapus opsi
             $option->delete();
-    
+
             // Berhasil menghapus, kirim respons sukses
             return response()->json([
                 'success' => true,

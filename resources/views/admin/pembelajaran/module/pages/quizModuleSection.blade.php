@@ -9,7 +9,7 @@
                     <div class="bg-primary rounded w-100">
 
                         <div class="rounded p-3 w-100" style="background-color: rgba(255, 255, 255, 0.4);">
-                            <input type="hidden" id="currentContent" name="currentContent" >
+                            <input type="hidden" id="currentContent" name="currentContent">
                             <ul class="list-group w-100 border-0" id="contentList">
                                 @foreach($contents as $content)
                                 <li class="list-group-item p-0 border-0 mb-2">
@@ -21,12 +21,10 @@
                                 </li>
                                 @endforeach
                             </ul>
-                            <button type="button" class="btn btn-outline-primary bg-white mt-4 w-100" onclick="exportCurrentQuiz()">Export Quiz</button>
+                            <button type="button" class="btn btn-outline-primary bg-white mt-4 w-100"
+                                onclick="exportCurrentQuiz()">Export Quiz</button>
                         </div>
-
-
                     </div>
-
                 </div>
 
                 <!-- Konten Kanan -->
@@ -38,30 +36,47 @@
                         <hr>
 
                         <!-- Form Inputs -->
-                        <div class="d-flex">
-                            <div class="col m-2">
-                                <label for="levelBloom" class="form-label">Level</label>
-                                <select class="form-select" id="levelBloom" name="levelBloom">
-                                    @foreach(['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create'] as $level)
-                                    <option value="{{ $level }}">{{ ucfirst($level) }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-4 m-2">
-                                <label for="typeQuestion" class="form-label">Type</label>
-                                <select class="form-select" id="typeQuestion" name="typeQuestion">
-                                    <option value="multiple_choice">Multiple Choice</option>
-                                    <option value="code">Code</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2 m-2">
-                                <label for="pointQuestion" class="form-label">Point</label>
-                                <input type="number" id="pointQuestion" name="pointQuestion" class="form-control" min="1">
+                        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3">
+                            <!-- KIRI: 3 kolom grid (Level, Type, Point) -->
+                            <div class="container-fluid px-0" style="flex-grow: 1;">
+                                <div class="row gx-2">
+                                    <div class="col-md-4">
+                                        <label for="levelBloom" class="form-label">Level</label>
+                                        <select class="form-select" id="levelBloom" name="levelBloom">
+                                            @foreach(['remember', 'understand', 'apply', 'analyze', 'evaluate',
+                                            'create'] as $level)
+                                            <option value="{{ $level }}">{{ ucfirst($level) }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="typeQuestion" class="form-label">Type</label>
+                                        <select class="form-select" id="typeQuestion" name="typeQuestion">
+                                            <option value="multiple_choice">Multiple Choice</option>
+                                            <option value="code">Code</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="pointQuestion" class="form-label">Point</label>
+                                        <input type="number" id="pointQuestion" name="pointQuestion"
+                                            class="form-control" min="1">
+                                    </div>
+                                    <!-- KANAN: Tombol Import -->
+                                    <div class="col-md-2">
+                                        <label class="form-label d-block invisible">Import</label>
+                                        <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                            data-bs-target="#importJsonModal">
+                                            <i class="bx bx-upload me-1"></i> Import JSON
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
+
                         <div class="m-2">
-                            <textarea id="moduleQuiz" name="moduleQuiz" class="form-control" style="height: 300px;"></textarea>
+                            <textarea id="moduleQuiz" name="moduleQuiz" class="form-control"
+                                style="height: 300px;"></textarea>
                         </div>
 
                         <!-- Dynamic Options Container -->
@@ -117,10 +132,36 @@
     </div>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="importJsonModal" tabindex="-1" aria-labelledby="importJsonModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <form method="POST" action="{{ route('dashboard.module.importQuizJson') }}" id="importQuizForm">
+      @csrf
+      <input type="hidden" name="content_id" id="importContentId"> <!-- Inject di JS -->
+
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Import Quiz dari JSON</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+          <textarea name="quiz_json" class="form-control" rows="15" placeholder="Tempel JSON quiz di sini..." required></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Import</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
 <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
 
 <script>
-let currentQuizzes = [];
+    let currentQuizzes = [];
 let currentStep = 0;
 let isDirty = false;
 let currentContentId = null;
@@ -159,6 +200,18 @@ document.addEventListener("DOMContentLoaded", async function () {
             this.submit();
         });
 
+        const importModal = document.getElementById('importJsonModal');
+        importModal.addEventListener('show.bs.modal', () => {
+            const input = document.getElementById('importContentId');
+            input.value = window.currentContentId || '';
+            
+            // Update action URL juga (jika perlu dinamis)
+            const form = document.getElementById('importQuizForm');
+            const originalAction = form.getAttribute('action');
+            const updatedAction = originalAction.replace(/\/\d+$/, `/${input.value}`);
+            form.setAttribute('action', updatedAction);
+        });
+
         // Event listener untuk perubahan typeQuestion
         document.getElementById('typeQuestion').addEventListener('change', function() {
             toggleEditor(this.value);
@@ -173,9 +226,21 @@ async function initTinyMCE() {
     return new Promise((resolve, reject) => {
         tinymce.init({
             selector: "#moduleQuiz",
-            toolbar: "undo redo | blocks | bold italic | alignleft aligncenter alignright | indent outdent | bullist numlist",
-            menubar: false,
-            plugins: "autoresize",
+            plugins: [
+                'autoresize', 'image', 'link', 'lists', 'code', 'table'
+            ],
+            height: 1000,
+            toolbar: `
+                undo redo | blocks | bold italic underline strikethrough |
+                alignleft aligncenter alignright alignjustify |
+                bullist numlist outdent indent | link image | code
+            `,
+            branding: false,
+            menubar: "insert format table",
+            contextmenu: "link blocks image | bold italic underline",
+            paste_data_images: true,
+            images_upload_url: '/upload-image',
+            automatic_uploads: true,
             setup: function(editor) {
                 editor.on('change', function() {
                     isDirty = true;
@@ -186,6 +251,7 @@ async function initTinyMCE() {
                 resolve(); // Menyelesaikan promise setelah TinyMCE selesai inisialisasi
             }
         });
+        
     });
 }
 
@@ -320,6 +386,9 @@ function loadQuizzes(moduleId, contentId) {
 
             updateStepperHeader();
             updateContentNavigation(contentId);
+
+            // Simpan ID konten aktif ke global
+            window.currentContentId = contentId;
 
             if(currentQuizzes.length > 0) {
                 updateFormData(currentQuizzes[0]);
@@ -830,4 +899,3 @@ function exportCurrentQuiz() {
 window.handleContentClick = handleContentClick;
 window.navigateToStep = navigateToStep;
 </script>
-

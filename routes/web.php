@@ -106,6 +106,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/dashboard/admin/pembelajaran/module/{moduleId}/content/{contentId}/import', [ModuleController::class, 'importModule'])->name('dashboard.module.importContent');
         Route::resource('/dashboard/admin/pembelajaran/content', ModuleContentController::class);
         Route::resource('/dashboard/admin/pembelajaran/quiz', ModuleQuizController::class);
+        Route::post('/dashboard/admin/pembelajaran/importQuiz', [ModuleQuizController::class, 'importQuizFromJsonText'])->name('dashboard.module.importQuizJson');
         Route::put('/dashboard/admin/pembelajaran/content/control/update', [ModuleControlController::class, 'update'])->name('dashboard.module.control.update');
 
 
