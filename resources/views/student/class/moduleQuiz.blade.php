@@ -30,7 +30,7 @@
                                 <h5>{!! $quiz->question !!}</h5>
 
                                 @if ($quiz->type === 'multiple_choice')
-                                @foreach ($quiz->choices as $choice)
+                                @foreach ($quiz->choices->shuffle() as $choice)
                                 <div class="form-check mb-2">
                                     <input class="form-check-input quiz-choice" type="radio"
                                         name="quiz[{{ $quiz->id }}]" value="{{ $choice->id }}"

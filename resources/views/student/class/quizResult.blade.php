@@ -158,12 +158,12 @@
                             <p class="my-3">Klik tombol di bawah untuk melanjutkan ke materi berikutnya.</p>
 
                             @if ($summary->status === 'Lulus')
-                            <a href="/dashboard/student/class/{{ $class->id }}/module/{{ $module->id + 1}}"
+                            <a href="{{ $nextUrl }}"
                                 class="btn btn-success px-4">
                                 Lanjutkan <i class="bx bx-send ms-2"></i>
                             </a>
                             @else
-                            <a href="/dashboard/student/class/{{ $class->id }}/module/{{ $module->id}}"
+                            <a href="{{ $nextUrl }}"
                                 class="btn btn-success px-4">
                                 Belajar Kembali <i class="bx bx-send ms-2"></i>
                             </a>
