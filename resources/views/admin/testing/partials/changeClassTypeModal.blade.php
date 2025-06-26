@@ -21,7 +21,7 @@
                                 <tr>
                                     <th><input class="form-check-input" type="checkbox" id="checkAllExperiment"></th>
                                     <th>Nama</th>
-                                    <th>NIM</th>
+                                    <th>Pre-test Score</th>
                                 </tr>
                             </thead>
                             <tbody id="experiment-student-body">
@@ -36,7 +36,7 @@
                                 <tr>
                                     <th><input class="form-check-input" type="checkbox" id="checkAllControl"></th>
                                     <th>Nama</th>
-                                    <th>NIM</th>
+                                    <th>Pre-test Score</th>
                                 </tr>
                             </thead>
                             <tbody id="control-student-body">

@@ -840,7 +840,7 @@
                     // Inject checkbox row
                     data.students.forEach(row => {
                         const checkbox = `<td><input type="checkbox" class="form-check-input student-checkbox ${row.class_type}-checkbox" data-id="${row.id}" data-class="${row.class_type}"></td>`;
-                        const html = `<tr>${checkbox}<td>${row.name}</td><td>${row.nim}</td></tr>`;
+                        const html = `<tr>${checkbox}<td>${row.name}</td><td>${row.pre_test}</td></tr>`;
                         if (row.class_type === 'experiment') expBody.innerHTML += html;
                         else if (row.class_type === 'control') ctrlBody.innerHTML += html;
                     });
