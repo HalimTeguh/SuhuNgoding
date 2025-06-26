@@ -474,18 +474,24 @@ $isExperiment = $classType === 'experiment';
         const bloom = bloomData[moduleId];
         if (!bloom) return;
 
-        console.log(bloom);
-
         const labels = [];
         const percentages = [];
         const corrects = [];
         const totals = [];
 
         for (const level in bloom) {
-            labels.push(level.charAt(0).toUpperCase() + level.slice(1)); // Capitalize
-            percentages.push(bloom[level].percentage);
-            corrects.push(bloom[level].correct);
-            totals.push(bloom[level].total);
+            labels.push(level.charAt(0).toUpperCase() + level.slice(1));
+
+            // Tangani level 'create' yang tidak punya correct/total
+            if (level === 'create') {
+                percentages.push(bloom[level].percentage || 0);
+                corrects.push('-'); // atau null
+                totals.push('-');
+            } else {
+                percentages.push(bloom[level].percentage || 0);
+                corrects.push(bloom[level].correct || 0);
+                totals.push(bloom[level].total || 0);
+            }
         }
 
         const ctx = document.getElementById('bloomChart').getContext('2d');
@@ -515,10 +521,12 @@ $isExperiment = $classType === 'experiment';
                             label: function(context) {
                                 const index = context.dataIndex;
                                 const level = labels[index].toLowerCase();
-                                const correct = corrects[index];
-                                const total = totals[index];
-                                const percentage = percentages[index];
-                                return `Correct: ${correct} / ${total} (${percentage}%)`;
+
+                                if (level === 'create') {
+                                    return `Nilai Final Project: ${percentages[index]}%`;
+                                } else {
+                                    return `Correct: ${corrects[index]} / ${totals[index]} (${percentages[index]}%)`;
+                                }
                             }
                         }
                     }

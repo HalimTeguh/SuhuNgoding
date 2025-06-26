@@ -13,12 +13,9 @@ use App\Models\QuizCode;
 use App\Models\StudentAnswers;
 use App\Models\StudentModulSummary;
 use App\Models\TTesting;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Process;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -267,25 +264,27 @@ class StudentClassController extends Controller
         $codeAnswers = $request->input('student_code', []);
         $duration = $request->input('duration', '0:0');
         $submittedAt = Carbon::now('Asia/Jakarta');
-        $studentAnswers = collect(); // 🔥 Gunakan collect() untuk array + metode koleksi Laravel
-        $totalPoints = 0;  // Untuk menyimpan total poin yang diperoleh siswa
+        $studentAnswers = collect();
+        $totalPoints = 0;
 
+
+        // Cek apakah ini final test (hanya 1 soal dan level create)
+        $allQuizzes = Quiz::where('content_id', $moduleId)->get();
+        $isFinalTest = $allQuizzes->count() === 1 && $allQuizzes->first()->bloom_level === 'create';
+        $finalTestScore = 0;
 
         // Multiple Choice
         foreach ($quizAnswers as $quizId => $choiceId) {
             $choice = QuizChoice::find($choiceId);
             if (!$choice) continue;
 
-            // Ambil point dari quiz
             $quiz = Quiz::find($quizId);
             $quizPoint = $quiz ? $quiz->point : 0;
 
-            // Cek apakah jawaban benar
             $isCorrect = $choice->is_correct;
 
-            // Menambahkan poin jika jawaban benar
-            if ($isCorrect) {
-                $totalPoints += $quizPoint;  // Tambahkan poin ke total poin
+            if (!$isFinalTest && $isCorrect) {
+                $totalPoints += $quizPoint;
             }
 
             $answer = StudentAnswers::create([
@@ -298,8 +297,9 @@ class StudentClassController extends Controller
                 'feedback' => $choice->feedback
             ]);
 
-            $studentAnswers->push($answer); // simpan ke variabel
+            $studentAnswers->push($answer);
         }
+
 
         // Code-Based Quiz
         foreach ($codeAnswers as $quizCodeId => $answerText) {
@@ -315,17 +315,21 @@ class StudentClassController extends Controller
                     'hypothesis_code' => $answerText,
                 ]);
 
+
                 if ($response->successful()) {
                     $data = $response->json();
-                    $isCorrect = isset($data['total_score']) && $data['total_score'] >= 0.7;
+                    $totalScore = $data['total_score'] ?? 0;
+                    $isCorrect = $totalScore >= 0.7;
 
-                    // Ambil point dari quiz
                     $quiz = Quiz::find($quizId);
                     $quizPoint = $quiz ? $quiz->point : 0;
 
-                    // Menambahkan poin jika jawaban benar
-                    if ($isCorrect) {
-                        $totalPoints += $quizPoint;  // Tambahkan poin ke total poin
+                    if (!$isFinalTest && $isCorrect) {
+                        $totalPoints += $quizPoint;
+                    }
+
+                    if ($isFinalTest) {
+                        $finalTestScore = min($totalScore * 100, 100); // Batasi maksimal 100
                     }
 
                     $answer = StudentAnswers::create([
@@ -340,7 +344,7 @@ class StudentClassController extends Controller
 
                     $studentAnswers->push($answer);
                 } else {
-                    $answer = StudentAnswers::create([
+                    $studentAnswers->push(StudentAnswers::create([
                         'student_id' => $student->id,
                         'quiz_id' => $quizId,
                         'choice_id' => null,
@@ -348,12 +352,10 @@ class StudentClassController extends Controller
                         'submitted_at' => $submittedAt,
                         'is_correct' => 0,
                         'feedback' => 'Gagal menilai (API error)'
-                    ]);
-
-                    $studentAnswers->push($answer);
+                    ]));
                 }
             } catch (\Exception $e) {
-                $answer = StudentAnswers::create([
+                $studentAnswers->push(StudentAnswers::create([
                     'student_id' => $student->id,
                     'quiz_id' => $quizId,
                     'choice_id' => null,
@@ -361,19 +363,21 @@ class StudentClassController extends Controller
                     'submitted_at' => $submittedAt,
                     'is_correct' => 0,
                     'feedback' => 'Gagal menilai (Exception: ' . $e->getMessage() . ')'
-                ]);
-
-                $studentAnswers->push($answer);
+                ]));
             }
         }
 
-        // 🔥 Hitung hasil quiz langsung dari variabel $studentAnswers
         $totalQuestions = $studentAnswers->count();
         $correctAnswers = $studentAnswers->where('is_correct', true)->count();
-        $averageScore = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100, 2) : 0;
-        $status = $averageScore >= 70 ? 'Lulus' : 'Tidak Lulus';
 
-        // 🔥 Periksa summary: update jika status NULL, insert baru jika status sudah diisi
+        if ($isFinalTest) {
+            $averageScore = round($finalTestScore, 2);
+            $status = $averageScore >= 70 ? 'Lulus' : 'Tidak Lulus';
+        } else {
+            $averageScore = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100, 2) : 0;
+            $status = $averageScore >= 70 ? 'Lulus' : 'Tidak Lulus';
+        }
+
         $summary = StudentModulSummary::where('student_id', $student->id)
             ->where('content_id', $moduleId)
             ->latest()
@@ -383,19 +387,17 @@ class StudentClassController extends Controller
         $totalSeconds = ((int)$minutes * 60) + (int)$seconds;
 
         if ($summary && is_null($summary->status)) {
-            // Update summary yang sudah ada
             $summary->quiz_attempts_total_duration = $totalSeconds;
             $summary->total_score = $averageScore;
             $summary->status = $status;
             $summary->quiz_submitted_at = $submittedAt;
-            $summary->quiz_attempts_count = 1; // default attempt count
+            $summary->quiz_attempts_count = 1;
             $summary->save();
         } else {
-            // Buat summary baru
             $summary = StudentModulSummary::create([
                 'student_id' => $student->id,
                 'content_id' => $moduleId,
-                'study_content_total_duration' => 0, // default
+                'study_content_total_duration' => 0,
                 'quiz_attempts_total_duration' => $totalSeconds,
                 'total_score' => $averageScore,
                 'status' => $status,
@@ -406,22 +408,20 @@ class StudentClassController extends Controller
 
         $content = ModuleContent::find($moduleId);
 
-        // 🔥 Tambahkan point ke Leaderboard
         $leaderboard = Leaderboard::where('class_id', $classId)
             ->where('module_id', $content->module_id)
             ->where('student_id', $student->id)
             ->first();
 
         if ($leaderboard) {
-            $leaderboard->point += $totalPoints;  // Tambah dengan poin yang diperoleh siswa
-            $leaderboard->save();  // Simpan perubahan
+            $leaderboard->point += $totalPoints;
+            $leaderboard->save();
         } else {
-            // Jika tidak ada data leaderboard, buat entri baru
             Leaderboard::create([
                 'class_id' => $classId,
                 'module_id' => $moduleId,
                 'student_id' => $student->id,
-                'point' => $totalPoints,  // Setel poinnya
+                'point' => $totalPoints
             ]);
         }
 
@@ -432,15 +432,15 @@ class StudentClassController extends Controller
             'classId' => $classId,
             'moduleId' => $modulContent->id,
             'summaryId' => $summary->id
-        ]))->with('toasts', [
-            [
-                'type' => 'success',
-                'title' => 'Jawaban Tersimpan',
-                'message' => 'Semua jawaban berhasil disimpan dan dinilai.',
-                'time' => now()->diffForHumans()
-            ]
-        ]);
+        ]))->with('toasts', [[
+            'type' => 'success',
+            'title' => 'Jawaban Tersimpan',
+            'message' => 'Semua jawaban berhasil disimpan dan dinilai.',
+            'time' => now()->diffForHumans()
+        ]]);
     }
+
+
 
     public function saveDurationStudyContent(Request $request)
     {
@@ -504,7 +504,6 @@ class StudentClassController extends Controller
     public function showResultQuiz(string $classId, string $moduleId, string $summaryId)
     {
         $user = auth()->user();
-
         $student = auth()->user()->student;
         $class = Classes::findOrFail($classId);
         $moduleContent = ModuleContent::findOrFail($moduleId);
@@ -518,13 +517,11 @@ class StudentClassController extends Controller
             ->where('content_id', $moduleId)
             ->get();
 
-        // Ambil jawaban siswa (filter summary_id jika sudah ada)
         $studentAnswers = StudentAnswers::where('student_id', $student->id)
             ->where('submitted_at', $summary->quiz_submitted_at)
             ->orderBy('submitted_at', 'asc')
             ->get();
 
-        // Gabungkan quiz dengan semua jawabannya
         $quizAnswers = $quizzes->map(function ($quiz) use ($studentAnswers) {
             $answers = $studentAnswers->where('quiz_id', $quiz->id)->sortBy('submitted_at');
             return [
@@ -533,6 +530,28 @@ class StudentClassController extends Controller
             ];
         });
 
+        // ✅ Tentukan URL halaman selanjutnya
+        if ($summary->status === 'Tidak Lulus') {
+            $nextUrl = route('dashboard.student.module', [
+                'classId' => $classId,
+                'moduleId' => $moduleContent->id
+            ]);
+        } else {
+            $nextContent = ModuleContent::where('module_id', $moduleContent->module_id)
+                ->where('id', '>', $moduleContent->id)
+                ->orderBy('id')
+                ->first();
+
+            if ($nextContent) {
+                $nextUrl = route('dashboard.student.module', [
+                    'classId' => $classId,
+                    'moduleId' => $nextContent->id
+                ]);
+            } else {
+                $nextUrl = route('dashboard.student.class.show', ['classId' => $classId]);
+            }
+        }
+
         return view('student.class.quizResult', [
             'user' => $user,
             'class' => $class,
@@ -540,74 +559,80 @@ class StudentClassController extends Controller
             'moduleContent' => $moduleContent,
             'summary' => $summary,
             'quizList' => $quizAnswers,
+            'nextUrl' => $nextUrl, // 🆕 kirim ke view
             'activeMenu' => 'class'
         ]);
     }
 
+
     public function calculateBloomLevels($studentId, $moduleId)
     {
-        // Ambil modul dan kontennya
         $module = Module::findOrFail($moduleId);
-        $moduleContents = ModuleContent::where('module_id', $moduleId)->get(); // Ambil semua konten modul
-        $quizzes = Quiz::whereIn('content_id', $moduleContents->pluck('id'))->get(); // Ambil semua quiz yang berhubungan dengan konten modul
+        $moduleContents = ModuleContent::where('module_id', $moduleId)->get();
+        $moduleContentIds = $moduleContents->pluck('id');
 
-        // Array untuk menyimpan hasil perhitungan per level
+        $quizzes = Quiz::whereIn('content_id', $moduleContentIds)->get();
+
         $levelData = [
             'remember' => ['correct' => 0, 'total' => 0],
             'understand' => ['correct' => 0, 'total' => 0],
             'apply' => ['correct' => 0, 'total' => 0],
             'analyze' => ['correct' => 0, 'total' => 0],
-            'evaluate' => ['correct' => 0, 'total' => 0]
+            'evaluate' => ['correct' => 0, 'total' => 0],
+            'create' => ['score' => 0, 'percentage' => 0],
         ];
 
-        // Loop melalui semua quiz yang berhubungan dengan konten modul
+        $summaries = StudentModulSummary::where('student_id', $studentId)
+            ->whereIn('content_id', $moduleContentIds)
+            ->get()
+            ->keyBy('content_id');
+
+        $submittedTimes = $summaries->pluck('quiz_submitted_at')->unique();
+
+        $studentAnswers = StudentAnswers::where('student_id', $studentId)
+            ->whereIn('quiz_id', $quizzes->pluck('id'))
+            ->whereIn('submitted_at', $submittedTimes)
+            ->get()
+            ->groupBy('quiz_id');
+
         foreach ($quizzes as $quiz) {
-            $bloomLevel = $quiz->bloom_level;  // Ambil level Bloom dari quiz
+            $bloomLevel = $quiz->bloom_level;
 
-            // Increment total soal untuk level Bloom ini berdasarkan jumlah soal quiz
-            if ($bloomLevel) {
+            if (!$bloomLevel || !isset($levelData[$bloomLevel])) continue;
+
+            $summary = $summaries->get($quiz->content_id);
+            if (!$summary) continue;
+
+            $answers = $studentAnswers->get($quiz->id) ?? collect();
+
+            if ($bloomLevel === 'create') {
+                $levelData['create']['score'] = $summary->total_score;
+                $levelData['create']['percentage'] = $summary->total_score;
+            } else {
                 $levelData[$bloomLevel]['total']++;
-
-                // Ambil summary dari StudentModulSummary untuk quiz ini berdasarkan percakapan terbaru
-                $summary = StudentModulSummary::where('student_id', $studentId)
-                    ->where('content_id', $quiz->content_id)
-                    ->latest()
-                    ->first(); // Ambil percakapan terbaru berdasarkan quiz_submitted_at
-
-                // Jika tidak ada summary, lewati quiz ini
-                if (!$summary) {
-                    continue;
-                }
-
-                // Ambil semua jawaban siswa untuk quiz ini berdasarkan percakapan terbaru
-                $answers = StudentAnswers::where('student_id', $studentId)
-                    ->where('quiz_id', $quiz->id)
-                    ->where('submitted_at', $summary->quiz_submitted_at) // Menyaring dengan waktu submit yang sama
-                    ->get();
-
-                // Periksa setiap jawaban siswa
                 foreach ($answers as $answer) {
-                    // Cek jika jawabannya benar
                     if ($answer->is_correct) {
-                        $levelData[$bloomLevel]['correct']++; // Increment soal yang benar
+                        $levelData[$bloomLevel]['correct']++;
                     }
                 }
             }
         }
 
-        // Menambahkan total soal untuk setiap level
         foreach ($levelData as $level => $data) {
-            if ($data['total'] === 0) {
-                // Jika tidak ada soal untuk level ini, set correct menjadi 0 dan total tetap 0
-                $levelData[$level]['percentage'] = 0;
-            } else {
-                // Hitung persentase pemahaman per level
-                $levelData[$level]['percentage'] = round(($data['correct'] / $data['total']) * 100, 2);
+            if ($level !== 'create') {
+                if ($data['total'] === 0) {
+                    $levelData[$level]['percentage'] = 0;
+                } else {
+                    $levelData[$level]['percentage'] = round(($data['correct'] / $data['total']) * 100, 2);
+                }
             }
         }
 
         return $levelData;
     }
+
+
+
 
     public function showLeaderboard()
     {
