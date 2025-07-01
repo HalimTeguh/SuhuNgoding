@@ -142,6 +142,65 @@ Route::middleware(['auth'])->group(function () {
 
     });
 
+    // ROLE => Teacher
+    Route::middleware('role:teacher')->group(function () {
+
+        Route::get('/dashboard/teacher', [DashboardController::class, 'teacher'])->name('dashboard.teacher');
+
+        Route::resource('/dashboard/teacher/users/student', StudentController::class);
+        Route::put('/dashboard/teacher/users/student/s/{student}', [StudentController::class, 'softDelete'])->name('dashboard.teacher.softDelete');
+
+        Route::resource('/dashboard/teacher/pembelajaran/class', ClassController::class);
+        Route::put('/dashboard/teacher/pembelajaran/class/s/{class}', [ClassController::class, 'softDelete'])->name('dashboard.teacher.class.softDelete');
+        Route::post('/dashboard/teacher/pembelajaran/class/{class}/attach-modules', [ClassController::class, 'attachModules'])->name('dashboard.teacher.class.attachModule');
+        Route::delete('/dashboard/teacher/pembelajaran/class/{class}/modules/{module}', [ClassController::class, 'detachModule'])->name('dashboard.teacher.class.detachModule');
+        Route::post('/dashboard/teacher/pembelajaran/class/{class}/attach-student', [ClassController::class, 'attachStudent'])->name('dashboard.teacher.class.attachStudent');
+        Route::delete('/dashboard/teacher/pembelajaran/class/{class}/students/{student}', [ClassController::class, 'detachStudent'])->name('dashboard.teacher.class.detachStudent');
+
+        Route::resource('/dashboard/teacher/pembelajaran/module', ModuleController::class);
+        Route::put('/dashboard/teacher/pembelajaran/module/{module}/uploadImage', [ModuleController::class, 'uploadImage'])->name('dashboard.teacher.module.uploadImage');
+        Route::put('/dashboard/teacher/pembelajaran/module/{module}/resetImage', [ModuleController::class, 'resetImage'])->name('dashboard.teacher.module.resetImage');
+
+        Route::get('/dashboard/teacher/pembelajaran/module/{moduleId}/content/{contentId}', [ModuleController::class, 'getModuleContent'])->name('dashboard.teacher.module.content');
+        Route::get('/dashboard/teacher/pembelajaran/module/{moduleId}/content/{contentId}/quiz', [ModuleController::class, 'getModuleQuiz'])->name('dashboard.teacher.module.quiz');
+        Route::get('/dashboard/teacher/pembelajaran/module/{moduleId}/content/{contentId}/control', [ModuleController::class, 'getModuleControl'])->name('dashboard.teacher.module.control');
+        Route::post('/dashboard/teacher/pembelajaran/module/{moduleId}/content/{contentId}/import', [ModuleController::class, 'importModule'])->name('dashboard.teacher.module.importContent');
+        Route::resource('/dashboard/teacher/pembelajaran/content', ModuleContentController::class);
+        Route::resource('/dashboard/teacher/pembelajaran/quiz', ModuleQuizController::class);
+        Route::post('/dashboard/teacher/pembelajaran/importQuiz', [ModuleQuizController::class, 'importQuizFromJsonText'])->name('dashboard.teacher.module.importQuizJson');
+        Route::put('/dashboard/teacher/pembelajaran/content/control/update', [ModuleControlController::class, 'update'])->name('dashboard.teacher.module.control.update');
+        Route::delete('/dashboard/teacher/pembelajaran/quiz/option/{optionId}', [ModuleQuizController::class, 'deleteOption'])->name('dashboard.teacher.module.quiz.deleteOption');
+
+        Route::resource('/dashboard/teacher/pembelajaran/gamification', GamificationController::class);
+
+        // Route::resource('/dashboard/admin/testing/quiz', TestingQuesController::class);
+        // Route::get('/dashboard/admin/testing/setting', [TestingQuesController::class, 'testingEnvironment'])->name('dashboard.testing.setting');
+        // Route::post('/dashboard/admin/testing/setting/assign-class', [TestingQuesController::class, 'assignClass'])->name('dashboard.testing.assignClass');
+        // Route::get('/dashboard/admin/testing/setting/class/{classId}/module/{moduleId}/summary', [TestingQuesController::class, 'getClassTestingSummary']);
+
+        // Route::post('/dashboard/admin/testing/setting/start-test', [TestingQuesController::class, 'startTest'])->name('testing.start');
+        // Route::post('/dashboard/admin/testing/setting/reset-test', [TestingQuesController::class, 'resetTest'])->name('testing.reset');
+
+        // Route::post('/dashboard/admin/testing/setting/divide-class', [TestingQuesController::class, 'divideIndependentSampling'])->name('testing.divideClass');
+        // Route::post('/dashboard/admin/testing/setting/reset-class', [TestingQuesController::class, 'resetIndependentSampling'])->name('testing.resetClass');
+
+        // Route::get('/dashboard/admin/testing/setting/class/{classId}/module/{moduleId}/levenes-test', [TestingQuesController::class, 'levenesPretest'])->name('testing.levenesTest');
+
+        // Route::get('/dashboard/admin/testing/setting/class/{classId}/module/{moduleId}/paired-test', [TestingQuesController::class, 'getPairedTestResult'])->name('testing.pairedTest');
+        // Route::post('/dashboard/admin/testing/paired-test/run', [TestingQuesController::class, 'runPairedTTest'])->name('testing.pairedTest.run');
+
+        // Route::get('/dashboard/admin/testing/setting/class/{classId}/module/{moduleId}/independent-test', [TestingQuesController::class, 'getIndependentTestResult'])->name('testing.independentTest');
+        // Route::post('/dashboard/admin/testing/independent-test/run', [TestingQuesController::class, 'runIndependentTTest'])->name('testing.independentTest.run');
+
+        // Route::post('/dashboard/admin/testing/change-class', [TestingQuesController::class, 'moveStudentClass'])->name('testing.moveClass');
+
+        // Route::get('/dashboard/admin/testing/setting/export-summary/{classId}/{moduleId}', [TestingQuesController::class, 'exportSummary'])
+        //     ->name('testing.exportSummary');
+
+        // Route::post('/convert-pdf', [ModuleQuizController::class, 'convertPdf']);
+
+    });
+
 
     // ROLE => STUDENT
     Route::middleware('role:student')->group(function () {

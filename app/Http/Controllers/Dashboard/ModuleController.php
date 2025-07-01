@@ -33,19 +33,33 @@ class ModuleController extends Controller
         //
         $user = auth()->user();
 
-        $modules = Module::whereNull('deleted_at')
-            ->get();
-
-        $teachers = User::where('role', 'teacher')
-            ->whereNull('deleted_at')
-            ->get();
-
-        return view('admin.pembelajaran.module.module', [
-            'user' => $user,
-            'modules' => $modules,
-            'teachers' => $teachers,
-            'activeMenu' => 'module'
-        ]);
+        if ($user->role == 'teacher') {
+            $modules = Module::whereNull('deleted_at')
+                ->where('teacher_id', $user->teacher->id)
+                ->get();
+            $teachers = User::where('role', 'teacher')
+                ->whereNull('deleted_at')
+                ->where('id',  $user->teacher->user_id)
+                ->get();
+            return view('teacher.module.index', [
+                'user' => $user,
+                'modules' => $modules,
+                'teachers' => $teachers,
+                'activeMenu' => 'module'
+            ]);
+        } else {
+            $modules = Module::whereNull('deleted_at')
+                ->get();
+            $teachers = User::where('role', 'teacher')
+                ->whereNull('deleted_at')
+                ->get();
+            return view('admin.pembelajaran.module.module', [
+                'user' => $user,
+                'modules' => $modules,
+                'teachers' => $teachers,
+                'activeMenu' => 'module'
+            ]);
+        }
     }
 
     /**
@@ -104,7 +118,7 @@ class ModuleController extends Controller
                 $content->save();
 
                 // Buat ControlModuleContent yang berelasi
-                $control = new ControlModuleContent ();
+                $control = new ControlModuleContent();
                 $control->module_content_id = $content->id;
                 $control->material_link = null; // Default null, bisa diedit nanti
                 $control->test_link = null;
@@ -180,17 +194,30 @@ class ModuleController extends Controller
 
         $contents = ModuleContent::where('module_id', $id)->get();
 
-        $allTeachers = User::where('role', 'teacher')
-            ->whereNull('deleted_at')
-            ->get();
-
-        return view('admin.pembelajaran.module.detailModule', [
-            'user' => $user,
-            'module' => $module,
-            'contents' => $contents,
-            'allTeacher' => $allTeachers,
-            'activeMenu' => 'module'
-        ]);
+        if ($user->role == 'teacher') {
+            $allTeachers = User::where('role', 'teacher')
+                ->whereNull('deleted_at')
+                ->where('id',  $user->teacher->user_id)
+                ->get();
+            return view('teacher.module.detailModule', [
+                'user' => $user,
+                'module' => $module,
+                'contents' => $contents,
+                'allTeacher' => $allTeachers,
+                'activeMenu' => 'module'
+            ]);
+        } else {
+            $allTeachers = User::where('role', 'teacher')
+                ->whereNull('deleted_at')
+                ->get();
+            return view('admin.pembelajaran.module.detailModule', [
+                'user' => $user,
+                'module' => $module,
+                'contents' => $contents,
+                'allTeacher' => $allTeachers,
+                'activeMenu' => 'module'
+            ]);
+        }
     }
 
     public function getModuleContent(string $moduleId, string $contentId)

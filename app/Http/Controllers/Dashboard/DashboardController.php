@@ -30,7 +30,12 @@ class DashboardController extends Controller
 
     public function teacher()
     {
-        return view('teacher.dashboard');
+        $user = auth()->user();
+
+        return view('teacher.dashboard.index', [
+            'user' => $user,
+            'activeMenu' => 'dashboard'
+        ]);
     }
 
     public function student()

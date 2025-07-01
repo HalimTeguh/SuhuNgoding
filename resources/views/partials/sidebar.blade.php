@@ -115,6 +115,97 @@
   </ul>
   @endif
 
+  {{-- Sidebar Teacher --}}
+  @if(Auth::user()->role == 'teacher')
+
+  <ul class="menu-inner py-1">
+    <!-- Dashboards -->
+    <li class="menu-item {{ $activeMenu === 'dashboard' ? 'active' : '' }}">
+      <a href="{{ route('dashboard.teacher') }}" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-home-smile"></i>
+        <div class="text-truncate" data-i18n="Dashboards">Dashboards</div>
+      </a>
+    </li>
+
+    <!-- Management -->
+    <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">Manage</span>
+    </li>
+
+    <li class="menu-item {{ $activeMenu === 'classes' ? 'active' : '' }}">
+      <a href="/dashboard/teacher/pembelajaran/class" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-group"></i>
+        <div class="text-truncate" data-i18n="class">Class</div>
+      </a>
+    </li>
+
+    <li class="menu-item {{ $activeMenu === 'module' ? 'active' : '' }}">
+      <a href="/dashboard/teacher/pembelajaran/module" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-book-content"></i>
+        <div class="text-truncate" data-i18n="module">Module</div>
+      </a>
+    </li>
+
+    <li class="menu-item {{ $activeMenu === 'gamification' ? 'active' : '' }}">
+      <a href="/dashboard/teacher/pembelajaran/gamification" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-trophy"></i>
+        <div class="text-truncate" data-i18n="gamification">Gamification</div>
+      </a>
+    </li>
+
+    <!-- Testing -->
+    <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">Testing</span>
+    </li>
+    <!-- Pages -->
+    <li class="menu-item {{ $activeMenu === 'questionTest' ? 'active' : '' }}">
+      <a href="/dashboard/teacher/testing/quiz" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-support"></i>
+        <div class="text-truncate" data-i18n="questionTest">Question Pre/Post test</div>
+      </a>
+    </li>
+    <li class="menu-item {{ $activeMenu === 'testingEnvirontment' ? 'active' : '' }}">
+      <a href="/dashboard/teacher/testing/setting" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-file"></i>
+        <div class="text-truncate" data-i18n="testingEnvirontment">Testing Environtment</div>
+      </a>
+    </li>
+
+  </ul>
+
+
+  {{--
+  <!-- Pages -->
+  <li
+    class="menu-item {{ $activeMenu === 'module' || $activeMenu === 'classes' || $activeMenu === 'gamification'  ? 'active open' : '' }}">
+    <a href="javascript:void(0);" class="menu-link menu-toggle">
+      <i class="menu-icon tf-icons bx bx-dock-top"></i>
+      <div class="text-truncate" data-i18n="Users">Learning</div>
+    </a>
+    <ul class="menu-sub">
+      <li class="menu-item {{ $activeMenu === 'module' ? 'active' : '' }}">
+        <a href="/dashboard/admin/pembelajaran/module" class="menu-link">
+          <div class="text-truncate" data-i18n="module">Module</div>
+        </a>
+      </li>
+      <li class="menu-item {{ $activeMenu === 'classes' ? 'active' : '' }}">
+        <a href="/dashboard/teacher/pembelajaran/class" class="menu-link">
+          <div class="text-truncate" data-i18n="classes">Class</div>
+        </a>
+      </li>
+      <li class="menu-item {{ $activeMenu === 'gamification' ? 'active' : '' }}">
+        <a href="/dashboard/admin/pembelajaran/gamification" class="menu-link">
+          <div class="text-truncate" data-i18n="gamification">Gamification</div>
+        </a>
+      </li>
+    </ul>
+  </li> --}}
+  {{--
+  <!-- Testing -->
+  </ul> --}}
+  @endif
+
+
   {{-- Sidebar Student --}}
   @if(Auth::user()->role == 'student')
   @php
