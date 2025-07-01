@@ -42,7 +42,15 @@ class LoginController extends Controller
                         'time' => now()->diffForHumans()  // Waktu toast
                     ]
                 ]);
-                // return redirect()->route('dashboard.admin')->with('success', 'Login berhasil sebagai Admin!');
+            } elseif ($user->role === 'teacher') {
+                return redirect()->route('dashboard.teacher')->with('toasts', [
+                    [
+                        'type' => 'success',  // Jenis toast
+                        'title' => 'Login Sukses',  // Judul toast
+                        'message' => 'Selamat datang kembali!',  // Pesan toast
+                        'time' => now()->diffForHumans()  // Waktu toast
+                    ]
+                ]);
             } elseif ($user->role === 'student') {
                 return redirect()->route('dashboard.student')->with('toasts', [
                     [
@@ -53,14 +61,9 @@ class LoginController extends Controller
                     ]
                 ]);
             }
-            // elseif ($user->role === 'teacher') {
-            //     return redirect()->route('teacher.dashboard')->with('success', 'Login berhasil sebagai Teacher!');
-            // } else {
-            //     return redirect()->route('student.dashboard')->with('success', 'Login berhasil sebagai Student!');
-            // }
+            
         }
 
-        // return back()->withErrors(['email' => 'Email atau password salah.'])->withInput();
         return back()->withErrors(['email' => 'Email atau password salah.'])->withInput()->with('toasts', [
             [
                 'type' => 'danger',  // Jenis toast

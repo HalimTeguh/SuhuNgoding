@@ -145,6 +145,15 @@
                                         class="ic-page-scroll mx-8 flex py-2 text-base font-medium text-body-light-12 group-hover:text-primary dark:text-body-dark-12 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 lg:text-primary-color lg:dark:text-primary-color lg:group-hover:text-primary-color lg:group-hover:opacity-70"
                                         role="menuitem">Contact</a>
                                 </li>
+
+                                <li class="group relative">
+                                    <a href="https://drive.google.com/file/d/1Fv5uAYCXL0QdCXGekczKwwUHRILeR7MR/view?usp=sharing"
+                                        target="_blank" rel="noopener noreferrer" title="For Student"
+                                        class="mx-8 flex py-2 text-base font-medium text-body-light-12 group-hover:text-primary dark:text-body-dark-12 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 lg:text-primary-color lg:dark:text-primary-color lg:group-hover:text-primary-color lg:group-hover:opacity-70">
+                                        Manual Book
+                                    </a>
+                                </li>
+
                             </ul>
                         </nav>
                     </div>
@@ -172,7 +181,7 @@
                     <div class="w-full">
                         <a href="." class="inline-block mb-5">
                             <svg width="182" height="82" viewBox="0 0 182 82" id="FooterBrand" class="w-full fill-current
-                                data-name="FooterBrand" xmlns="http://www.w3.org/2000/svg">
+                                data-name=" FooterBrand" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M4.8 62V16.688H13.952V62H4.8ZM32.254 62.448C30.6753 62.448 29.054 62.2773 27.39 61.936C25.726 61.5947 24.19 61.0187 22.782 60.208C21.374 59.3547 20.1793 58.224 19.198 56.816C18.2167 55.3653 17.5767 53.5733 17.278 51.44H26.366C26.622 52.208 27.07 52.8693 27.71 53.424C28.3927 53.9787 29.1607 54.384 30.014 54.64C30.91 54.896 31.806 55.024 32.702 55.024C33.2993 55.024 33.8967 54.9813 34.494 54.896C35.0913 54.8107 35.646 54.64 36.158 54.384C36.67 54.128 37.0753 53.808 37.374 53.424C37.6727 52.9973 37.822 52.464 37.822 51.824C37.822 51.1413 37.6087 50.608 37.182 50.224C36.7553 49.84 36.158 49.5413 35.39 49.328C34.622 49.072 33.7473 48.8373 32.766 48.624C31.0167 48.24 29.1393 47.8133 27.134 47.344C25.1287 46.8747 23.4007 46.192 21.95 45.296C21.3527 44.8693 20.8193 44.4 20.35 43.888C19.8807 43.376 19.4967 42.8 19.198 42.16C18.8993 41.52 18.6647 40.8587 18.494 40.176C18.3233 39.4507 18.238 38.6827 18.238 37.872C18.238 36.0373 18.622 34.48 19.39 33.2C20.2007 31.8773 21.2673 30.8107 22.59 30C23.9127 29.1893 25.3847 28.6133 27.006 28.272C28.6273 27.888 30.2913 27.696 31.998 27.696C34.302 27.696 36.4353 28.08 38.398 28.848C40.3607 29.5733 41.982 30.7253 43.262 32.304C44.542 33.84 45.3313 35.8453 45.63 38.32H37.054C36.8833 37.3813 36.3073 36.6347 35.326 36.08C34.3447 35.4827 33.1287 35.184 31.678 35.184C31.166 35.184 30.6113 35.2267 30.014 35.312C29.4593 35.3973 28.9473 35.5467 28.478 35.76C28.0087 35.9733 27.6247 36.272 27.326 36.656C27.0273 36.9973 26.878 37.4667 26.878 38.064C26.878 38.5333 27.006 38.96 27.262 39.344C27.5607 39.728 27.966 40.048 28.478 40.304C29.0327 40.56 29.694 40.7947 30.462 41.008C31.9127 41.3493 33.3633 41.6693 34.814 41.968C36.3073 42.224 37.63 42.5013 38.782 42.8C40.19 43.0987 41.47 43.5893 42.622 44.272C43.8167 44.9547 44.7767 45.8933 45.502 47.088C46.27 48.24 46.654 49.7547 46.654 51.632C46.654 53.7653 46.2273 55.536 45.374 56.944C44.5207 58.3093 43.3687 59.3973 41.918 60.208C40.51 61.0187 38.9527 61.5947 37.246 61.936C35.582 62.2773 33.918 62.448 32.254 62.448Z"
                                     fill="#eeeef0" />
@@ -209,7 +218,8 @@
                         </a>
 
                         <p class="mb-8 text-body-dark-11">
-                            We are an education-focused team dedicated to providing accessible and structured programming learning experiences for vocational students.
+                            We are an education-focused team dedicated to providing accessible and structured
+                            programming learning experiences for vocational students.
                         </p>
 
                         <div class="-mx-3 flex items-center">

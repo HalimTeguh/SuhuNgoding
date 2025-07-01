@@ -104,7 +104,7 @@
                         </div>
 
                         <!-- Tombol Kirim -->
-                        <div class="card shadow-sm border-0 mt-4">
+                        <div class="card shadow-sm border-0 my-4">
                             <div class="card-header bg-primary text-white">
                                 <h5 class="card-title text-white m-0">Selesai?</h5>
                             </div>
@@ -195,6 +195,7 @@
 
         function showQuestion(index) {
             questions.forEach((q, i) => q.style.display = i === index ? "block" : "none");
+
             navButtons.forEach((btn, i) => {
                 btn.classList.remove("btn-primary", "btn-outline-primary", "btn-outline-secondary");
                 const inputName = `quiz[${@json($quizList)[i].id}]`;
@@ -208,10 +209,19 @@
                     btn.classList.add("btn-outline-secondary");
                 }
             });
+
             currentIndex = index;
             prevBtn.disabled = index === 0;
-            nextBtn.textContent = (index === questions.length - 1) ? "Selesai" : "Selanjutnya";
+
+            if (index === questions.length - 1) {
+                nextBtn.classList.add('d-none'); // sembunyikan
+            } else {
+                nextBtn.classList.remove('d-none'); // tampilkan kembali jika belum akhir
+                nextBtn.textContent = "Selanjutnya";
+            }
         }
+
+
 
         navButtons.forEach(btn => {
             btn.addEventListener("click", () => {

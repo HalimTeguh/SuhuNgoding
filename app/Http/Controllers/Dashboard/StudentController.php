@@ -145,36 +145,64 @@ class StudentController extends Controller
      */
     public function update(Request $request, string $id)
     {
+
         //
         try {
-            $student = User::findOrFail($id);
+            $user = auth()->user();
+            $student = Student::findOrFail($id);
 
-            // Validasi input
-            $validatedData = $request->validate([
-                'nameEdit' => 'required|string|max:255',
-                'emailEdit' => [
-                    'required',
-                    'email',
-                    Rule::unique('users', 'email')->ignore($id),
-                ],
-                'NISEdit' => [
-                    'required',
-                    Rule::unique('students', 'NIS')->ignore($student->student->id),
-                ],
-                'institutionEdit' => 'nullable|string',
-                'addressEdit' => 'nullable|string',
-                'passwordEdit' => 'nullable|min:6',
-            ]);
+            if ($user->role == 'teacher') {
+                // Validasi input
+                $validatedData = $request->validate([
+                    'nameUpdate' => 'required|string|max:255',
+                    'emailEdit' => [
+                        'required',
+                        'email',
+                        Rule::unique('users', 'email')->ignore($id),
+                    ],
+                    'NISEdit' => [
+                        'required',
+                        Rule::unique('students', 'NIS')->ignore($student->student->id),
+                    ],
+                    'institutionEdit' => 'nullable|string',
+                    'addressEdit' => 'nullable|string',
+                    'passwordEdit' => 'nullable|min:6',
+                ]);
 
-            // Perbarui data student
-            $student->fill([
-                'name' => $validatedData['nameEdit'],
-                'email' => $student->email !== $validatedData['emailEdit'] ? $validatedData['emailEdit'] : $student->email,
-                'password' => $request->filled('passwordEdit') ? HASH::make($validatedData['passwordEdit']) : $student->password,
-            ]);
+                // Perbarui data student
+                $student->user->fill([
+                    'name' => $validatedData['nameUpdate'],
+                    'email' => $student->email !== $validatedData['emailEdit'] ? $validatedData['emailEdit'] : $student->email,
+                    'password' => $request->filled('passwordEdit') ? HASH::make($validatedData['passwordEdit']) : $student->password,
+                ]);
+            } else {
+                // Validasi input
+                $validatedData = $request->validate([
+                    'nameEdit' => 'required|string|max:255',
+                    'emailEdit' => [
+                        'required',
+                        'email',
+                        Rule::unique('users', 'email')->ignore($id),
+                    ],
+                    'NISEdit' => [
+                        'required',
+                        Rule::unique('students', 'NIS')->ignore($student->student->id),
+                    ],
+                    'institutionEdit' => 'nullable|string',
+                    'addressEdit' => 'nullable|string',
+                    'passwordEdit' => 'nullable|min:6',
+                ]);
+
+                // Perbarui data student
+                $student->user->fill([
+                    'name' => $validatedData['nameEdit'],
+                    'email' => $student->email !== $validatedData['emailEdit'] ? $validatedData['emailEdit'] : $student->user->email,
+                    'password' => $request->filled('passwordEdit') ? HASH::make($validatedData['passwordEdit']) : $student->user->password,
+                ]);
+            }
 
             // Perbarui data relasi teacher
-            $student->student->update([
+            $student->update([
                 'NIS' => $validatedData['NISEdit'],
                 'institution' => $validatedData['institutionEdit'],
                 'address' => $validatedData['addressEdit'],

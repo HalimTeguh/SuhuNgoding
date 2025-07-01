@@ -29,24 +29,36 @@ class ClassController extends Controller
         //
         $user = auth()->user();
 
-        $classes = Classes::whereNull('deleted_at')
-            ->get();
-
-        $allTeachers = User::where('role', 'teacher')
-            ->whereNull('deleted_at')
-            ->get();
-
         $allStudents = User::leftJoin('students', 'users.id', '=', 'students.user_id')
             ->where('role', 'student')
             ->get();
 
-        return view('admin.pembelajaran.class.class', [
-            'user' => $user,
-            'classes' => $classes,
-            'allTeachers' => $allTeachers,
-            'allStudents' => $allStudents,
-            'activeMenu' => 'classes'
-        ]);
+        if ($user->role == 'teacher') {
+            $classes = Classes::whereNull('deleted_at')->where('teacher_id', $user->teacher->id)->get();
+            $allTeachers = User::where('role', 'teacher')
+                ->whereNull('deleted_at')
+                ->where('id',  $user->teacher->user_id)
+                ->get();
+            return view('teacher.class.index', [
+                'user' => $user,
+                'classes' => $classes,
+                'allTeachers' => $allTeachers,
+                'allStudents' => $allStudents,
+                'activeMenu' => 'classes'
+            ]);
+        } else {
+            $classes = Classes::whereNull('deleted_at')->get();
+            $allTeachers = User::where('role', 'teacher')
+                ->whereNull('deleted_at')
+                ->get();
+            return view('admin.pembelajaran.class.class', [
+                'user' => $user,
+                'classes' => $classes,
+                'allTeachers' => $allTeachers,
+                'allStudents' => $allStudents,
+                'activeMenu' => 'classes'
+            ]);
+        }
     }
 
     /**
@@ -214,10 +226,6 @@ class ClassController extends Controller
 
         $class = Classes::with(['teacher.user', 'students.user', 'modules.teacher.user'])->findOrFail($id);
 
-        $allTeachers = User::where('role', 'teacher')
-            ->whereNull('deleted_at')
-            ->get();
-
         $allStudents = User::leftJoin('students', 'users.id', '=', 'students.user_id')
             ->where('role', 'student')
             ->get();
@@ -244,16 +252,38 @@ class ClassController extends Controller
             })
             ->get();
 
-        return view('admin.pembelajaran.class.detailClass', [
-            'user' => $user,
-            'class' => $class,
-            'teacher' => $class->teacher,
-            'allTeacher' => $allTeachers,
-            'allStudents' => $allStudents,
-            'students' => $class->students,
-            'availableModules' => $availableModules,
-            'activeMenu' => 'classes'
-        ]);
+        if ($user->role == "teacher") {
+            $allTeachers = User::where('role', 'teacher')
+                ->where('id',  $user->teacher->user_id)
+                ->whereNull('deleted_at')
+                ->get();
+
+            return view('teacher.class.detailClass', [
+                'user' => $user,
+                'class' => $class,
+                'teacher' => $class->teacher,
+                'allTeacher' => $allTeachers,
+                'allStudents' => $allStudents,
+                'students' => $class->students,
+                'availableModules' => $availableModules,
+                'activeMenu' => 'classes'
+            ]);
+        } else {
+            $allTeachers = User::where('role', 'teacher')
+                ->whereNull('deleted_at')
+                ->get();
+
+            return view('admin.pembelajaran.class.detailClass', [
+                'user' => $user,
+                'class' => $class,
+                'teacher' => $class->teacher,
+                'allTeacher' => $allTeachers,
+                'allStudents' => $allStudents,
+                'students' => $class->students,
+                'availableModules' => $availableModules,
+                'activeMenu' => 'classes'
+            ]);
+        }
     }
 
     public function attachModules(Request $request, Classes $class)
