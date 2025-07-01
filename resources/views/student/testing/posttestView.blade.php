@@ -86,41 +86,30 @@
 </div>
 
 @if($canDoPosttest)
-<!-- SCRIPT TIMER + VALIDASI -->
+<!-- SCRIPT TIMER MUNDUR 30 MENIT -->
 <script>
-    // Timer
-    let startTime = Date.now();
-    setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const totalSeconds = Math.floor(elapsed / 1000);
-        const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
-        const seconds = String(totalSeconds % 60).padStart(2, '0');
-        document.getElementById('durationInput').value = `${minutes}:${seconds}`;
-        document.getElementById('durationDisplay').textContent = `${minutes}:${seconds}`;
-    }, 1000);
+    // Total waktu dalam detik (30 menit)
+    let remainingSeconds = 30 * 60;
 
-    // Validasi & highlight
-    document.getElementById('submitQuizForm').addEventListener('submit', function (e) {
-        const questions = document.querySelectorAll('.quiz-question');
-        let allAnswered = true;
+    const durationInput = document.getElementById('durationInput');
+    const durationDisplay = document.getElementById('durationDisplay');
+    const submitForm = document.getElementById('submitQuizForm');
 
-        questions.forEach(question => {
-            const inputName = question.querySelector('.quiz-choice')?.getAttribute('name');
-            const isAnswered = question.querySelector(`input[name="${inputName}"]:checked`);
-
-            if (!isAnswered) {
-                allAnswered = false;
-                question.classList.add('border', 'border-danger');
-            } else {
-                question.classList.remove('border', 'border-danger');
-            }
-        });
-
-        if (!allAnswered) {
-            e.preventDefault();
-            alert('Harap jawab semua pertanyaan sebelum submit.');
+    const timer = setInterval(() => {
+        if (remainingSeconds <= 0) {
+            clearInterval(timer);
+            durationInput.value = '30:00';
+            durationDisplay.textContent = '00:00';
+            alert('Waktu telah habis! Jawaban Anda akan otomatis disubmit.');
+            submitForm.submit();
+        } else {
+            const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, '0');
+            const seconds = String(remainingSeconds % 60).padStart(2, '0');
+            durationInput.value = `${minutes}:${seconds}`;
+            durationDisplay.textContent = `${minutes}:${seconds}`;
+            remainingSeconds--;
         }
-    });
+    }, 1000);
 </script>
 @endif
 @endsection
