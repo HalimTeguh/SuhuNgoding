@@ -147,7 +147,7 @@
                                 </li>
 
                                 <li class="group relative">
-                                    <a href="https://drive.google.com/file/d/1Fv5uAYCXL0QdCXGekczKwwUHRILeR7MR/view?usp=sharing"
+                                    <a href="https://drive.google.com/file/d/1-dHMZpy2U_C0VPcJe3uxYcHD8YUGlHdy/view?usp=sharing"
                                         target="_blank" rel="noopener noreferrer" title="For Student"
                                         class="mx-8 flex py-2 text-base font-medium text-body-light-12 group-hover:text-primary dark:text-body-dark-12 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 lg:text-primary-color lg:dark:text-primary-color lg:group-hover:text-primary-color lg:group-hover:opacity-70">
                                         Manual Book
