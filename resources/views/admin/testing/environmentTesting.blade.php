@@ -388,7 +388,13 @@
                                 <td>${row.nim}</td>
                                 <td>${row.class_type}</td>
                                 <td>${row.pre_test}</td>
-                                <td>${row.progress}</td>
+                                <td>
+                                    ${
+                                        row.class_type === 'control'
+                                            ? `<span class="badge bg-warning">Kontrol</span>`
+                                            : `${row.progress}`
+                                    }
+                                </td>
                                 <td>${row.post_test}</td>
                                 <td>
                                     <div class="dropdown">

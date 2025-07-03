@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Module;
 use App\Models\QuestionChoice;
 use App\Models\QuestionTest;
+use App\Models\StudentModulSummary;
 use App\Models\StudentTestAnswer;
 use App\Models\TTesting;
 use Illuminate\Http\Request;
@@ -111,15 +113,33 @@ class StudentTestingController extends Controller
         $student = $user->student;
 
         $testingStudent = TTesting::where('student_id', $student->id)->first();
-        $scorePosttest = $testingStudent ? $testingStudent->post_test_score : null;
-        $classType = $testingStudent ? $testingStudent->class_type : null;
-        $canDoPosttest = $testingStudent && $testingStudent->can_do_posttest;
-
-        if ($canDoPosttest) {
-            $questions = QuestionTest::with('choices')->get();
-        } else {
-            $questions = [];
+        if (!$testingStudent) {
+            abort(404, 'Data testing student tidak ditemukan.');
         }
+
+        $scorePosttest = $testingStudent->post_test_score;
+        $classType = $testingStudent->class_type;
+        $canDoPosttest = $testingStudent->can_do_posttest;
+
+        // Gunakan data dari TTesting
+        $module = Module::with('contents')->find($testingStudent->module_id);
+        $contentIds = $module?->contents->pluck('id') ?? collect();
+        $totalContent = $contentIds->count();
+
+        // Hitung progress lulus siswa
+        $progressData = StudentModulSummary::where('student_id', $student->id)
+            ->whereIn('content_id', $contentIds)
+            ->where('status', 'Lulus')
+            ->groupBy('content_id')
+            ->selectRaw('content_id, count(*) as total_lulus')
+            ->get()
+            ->pluck('total_lulus', 'content_id')
+            ->toArray();
+
+        $progressCount = count($progressData);
+        $moduleRemaining = $totalContent - $progressCount;
+
+        $questions = $canDoPosttest ? QuestionTest::with('choices')->get() : [];
 
         return view('student.testing.posttestView', [
             'user' => $user,
@@ -127,9 +147,12 @@ class StudentTestingController extends Controller
             'scorePosttest' => $scorePosttest,
             'classType' => $classType,
             'questions' => $questions,
+            'moduleRemaining' => $moduleRemaining,
+            'progress_data' => $progressData,
             'activeMenu' => 'posttest'
         ]);
     }
+
 
     public function submitPosttest(Request $request)
     {
@@ -182,7 +205,7 @@ class StudentTestingController extends Controller
         ]]);
     }
 
-    
+
 
 
     /**
