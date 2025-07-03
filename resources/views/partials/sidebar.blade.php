@@ -243,7 +243,6 @@
           </a>
         </li>
         @endif
-
       </ul>
     </li>
 
@@ -264,6 +263,15 @@
         <div class="text-truncate" data-i18n="posttest">Post-test</div>
       </a>
     </li>
+    @if($tTest && $tTest->post_test_score != null)
+    <li class="menu-item">
+      <a href="https://forms.gle/TbhxBCCRu1meFeQw5" class="menu-link" target="_blank">
+        <i class="menu-icon tf-icons bx bx-file"></i>
+        <div class="text-truncate" data-i18n="UAT">User Acceptance</div>
+      </a>
+    </li>
+    @endif
+
 
     <!-- Settings -->
     {{-- <li class="menu-header small text-uppercase">
