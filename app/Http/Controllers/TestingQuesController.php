@@ -839,7 +839,6 @@ PROMPT;
 
             $result = StatisticalTestHelper::independentTTestManual($experiment, $control);
 
-            dd($result, $control, $experiment);
             
             // Simpan hasil ke DB
             IndependentTTest::updateOrCreate(
