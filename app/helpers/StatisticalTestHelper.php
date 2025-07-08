@@ -60,6 +60,20 @@ class StatisticalTestHelper
 
         $se = sqrt(($sd1 ** 2 / $n1) + ($sd2 ** 2 / $n2));
 
+        if ($se == 0) {
+            return [
+                't_statistic' => 0,
+                'degrees_freedom' => 0,
+                'p_value' => 1,
+                'is_significant' => false,
+                'group_statistics' => [
+                    'experiment' => ['mean' => $mean1, 'stddev' => $sd1, 'n' => $n1],
+                    'control'    => ['mean' => $mean2, 'stddev' => $sd2, 'n' => $n2],
+                ],
+                'interpretation' => 'Tidak dapat menghitung T-Statistic karena variasi data terlalu kecil atau sama persis.'
+            ];
+        }
+
         $t = ($mean1 - $mean2) / $se;
 
         $df_numerator = (($sd1 ** 2 / $n1) + ($sd2 ** 2 / $n2)) ** 2;
