@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers;
+namespace App\helpers;
 
 class StatisticalTestHelper
 {
@@ -58,6 +58,7 @@ class StatisticalTestHelper
         $sd1 = self::standardDeviation($group1, $mean1);
         $sd2 = self::standardDeviation($group2, $mean2);
 
+        $se = sqrt(($sd1 ** 2 / $n1) + ($sd2 ** 2 / $n2));
         $se = sqrt(($sd1 ** 2 / $n1) + ($sd2 ** 2 / $n2));
 
         if ($se == 0) {

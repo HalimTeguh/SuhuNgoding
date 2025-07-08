@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\SummaryTestExport;
 use App\Exports\TTestingExport;
-use App\Helpers\StatisticalTestHelper;
+use App\helpers\StatisticalTestHelper;
 use App\Models\Classes;
 use App\Models\IndependentTTest;
 use App\Models\Module;
