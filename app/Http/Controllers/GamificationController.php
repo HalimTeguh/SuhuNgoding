@@ -17,11 +17,19 @@ class GamificationController extends Controller
         // Ambil hanya admin yang belum dihapus (deleted_at == null)
         $gamiData = Gamification::all();
 
-        return view('admin.pembelajaran.gamification.gamification', [
-            'user' => $user,
-            'gamiData' => $gamiData,
-            'activeMenu' => 'gamification'
-        ]);
+        if ($user->role == 'admin') {
+            return view('admin.pembelajaran.gamification.gamification', [
+                'user' => $user,
+                'gamiData' => $gamiData,
+                'activeMenu' => 'gamification'
+            ]);
+        } elseif ($user->role == 'teacher') {
+            return view('teacher.gamification.gamification', [
+                'user' => $user,
+                'gamiData' => $gamiData,
+                'activeMenu' => 'gamification'
+            ]);
+        }
     }
 
     /**

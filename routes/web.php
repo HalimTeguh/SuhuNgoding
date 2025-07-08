@@ -154,6 +154,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/dashboard/teacher/pembelajaran/class/s/{class}', [ClassController::class, 'softDelete'])->name('dashboard.teacher.class.softDelete');
         Route::post('/dashboard/teacher/pembelajaran/class/{class}/attach-modules', [ClassController::class, 'attachModules'])->name('dashboard.teacher.class.attachModule');
         Route::delete('/dashboard/teacher/pembelajaran/class/{class}/modules/{module}', [ClassController::class, 'detachModule'])->name('dashboard.teacher.class.detachModule');
+        Route::get('/dashboard/teacher/pembelajaran/class/{class}/modules/{module}/progress', [ClassController::class, 'moduleProgress'])->name('dashboard.teacher.class.moduleProgress');
         Route::post('/dashboard/teacher/pembelajaran/class/{class}/attach-student', [ClassController::class, 'attachStudent'])->name('dashboard.teacher.class.attachStudent');
         Route::delete('/dashboard/teacher/pembelajaran/class/{class}/students/{student}', [ClassController::class, 'detachStudent'])->name('dashboard.teacher.class.detachStudent');
 
@@ -173,31 +174,31 @@ Route::middleware(['auth'])->group(function () {
 
         Route::resource('/dashboard/teacher/pembelajaran/gamification', GamificationController::class);
 
-        // Route::resource('/dashboard/admin/testing/quiz', TestingQuesController::class);
-        // Route::get('/dashboard/admin/testing/setting', [TestingQuesController::class, 'testingEnvironment'])->name('dashboard.testing.setting');
-        // Route::post('/dashboard/admin/testing/setting/assign-class', [TestingQuesController::class, 'assignClass'])->name('dashboard.testing.assignClass');
-        // Route::get('/dashboard/admin/testing/setting/class/{classId}/module/{moduleId}/summary', [TestingQuesController::class, 'getClassTestingSummary']);
+        Route::resource('/dashboard/teacher/testing/quiz', TestingQuesController::class);
+        Route::get('/dashboard/teacher/testing/setting', [TestingQuesController::class, 'testingEnvironment'])->name('dashboard.teacher.testing.setting');
+        Route::post('/dashboard/teacher/testing/setting/assign-class', [TestingQuesController::class, 'assignClass'])->name('dashboard.teacher.testing.assignClass');
+        Route::get('/dashboard/teacher/testing/setting/class/{classId}/module/{moduleId}/summary', [TestingQuesController::class, 'getClassTestingSummary']);
 
-        // Route::post('/dashboard/admin/testing/setting/start-test', [TestingQuesController::class, 'startTest'])->name('testing.start');
-        // Route::post('/dashboard/admin/testing/setting/reset-test', [TestingQuesController::class, 'resetTest'])->name('testing.reset');
+        Route::post('/dashboard/teacher/testing/setting/start-test', [TestingQuesController::class, 'startTest'])->name('teacher.testing.start');
+        Route::post('/dashboard/teacher/testing/setting/reset-test', [TestingQuesController::class, 'resetTest'])->name('teacher.testing.reset');
 
-        // Route::post('/dashboard/admin/testing/setting/divide-class', [TestingQuesController::class, 'divideIndependentSampling'])->name('testing.divideClass');
-        // Route::post('/dashboard/admin/testing/setting/reset-class', [TestingQuesController::class, 'resetIndependentSampling'])->name('testing.resetClass');
+        Route::post('/dashboard/teacher/testing/setting/divide-class', [TestingQuesController::class, 'divideIndependentSampling'])->name('teacher.testing.divideClass');
+        Route::post('/dashboard/teacher/testing/setting/reset-class', [TestingQuesController::class, 'resetIndependentSampling'])->name('teacher.testing.resetClass');
 
-        // Route::get('/dashboard/admin/testing/setting/class/{classId}/module/{moduleId}/levenes-test', [TestingQuesController::class, 'levenesPretest'])->name('testing.levenesTest');
+        Route::get('/dashboard/teacher/testing/setting/class/{classId}/module/{moduleId}/levenes-test', [TestingQuesController::class, 'levenesPretest'])->name('teacher.testing.levenesTest');
 
-        // Route::get('/dashboard/admin/testing/setting/class/{classId}/module/{moduleId}/paired-test', [TestingQuesController::class, 'getPairedTestResult'])->name('testing.pairedTest');
-        // Route::post('/dashboard/admin/testing/paired-test/run', [TestingQuesController::class, 'runPairedTTest'])->name('testing.pairedTest.run');
+        Route::get('/dashboard/teacher/testing/setting/class/{classId}/module/{moduleId}/paired-test', [TestingQuesController::class, 'getPairedTestResult'])->name('teacher.testing.pairedTest');
+        Route::post('/dashboard/teacher/testing/paired-test/run', [TestingQuesController::class, 'runPairedTTest'])->name('teacher.testing.pairedTest.run');
 
-        // Route::get('/dashboard/admin/testing/setting/class/{classId}/module/{moduleId}/independent-test', [TestingQuesController::class, 'getIndependentTestResult'])->name('testing.independentTest');
-        // Route::post('/dashboard/admin/testing/independent-test/run', [TestingQuesController::class, 'runIndependentTTest'])->name('testing.independentTest.run');
+        Route::get('/dashboard/teacher/testing/setting/class/{classId}/module/{moduleId}/independent-test', [TestingQuesController::class, 'getIndependentTestResult'])->name('teacher.testing.independentTest');
+        Route::post('/dashboard/teacher/testing/independent-test/run', [TestingQuesController::class, 'runIndependentTTest'])->name('teacher.testing.independentTest.run');
 
-        // Route::post('/dashboard/admin/testing/change-class', [TestingQuesController::class, 'moveStudentClass'])->name('testing.moveClass');
+        Route::post('/dashboard/teacher/testing/change-class', [TestingQuesController::class, 'moveStudentClass'])->name('teacher.testing.moveClass');
 
-        // Route::get('/dashboard/admin/testing/setting/export-summary/{classId}/{moduleId}', [TestingQuesController::class, 'exportSummary'])
-        //     ->name('testing.exportSummary');
+        Route::get('/dashboard/teacher/testing/setting/export-summary/{classId}/{moduleId}', [TestingQuesController::class, 'exportSummary'])
+            ->name('testing.exportSummary');
 
-        // Route::post('/convert-pdf', [ModuleQuizController::class, 'convertPdf']);
+        Route::post('/convert-pdf', [ModuleQuizController::class, 'convertPdf']);
 
     });
 
