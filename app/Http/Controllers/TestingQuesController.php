@@ -40,11 +40,19 @@ class TestingQuesController extends Controller
         // Ambil data soal dan pilihan jawaban yang terkait
         $questions = QuestionTest::with('choices')->get();  // Ambil semua soal beserta pilihan jawabannya
 
-        return view('admin.testing.index', [
-            'user' => $user,
-            'questions' => $questions,
-            'activeMenu' => 'questionTest'
-        ]);
+        if ($user->role == 'teacher') {
+            return view('teacher.testing.index', [
+                'user' => $user,
+                'questions' => $questions,
+                'activeMenu' => 'questionTest'
+            ]);
+        } elseif ($user->role == 'admin') {
+            return view('admin.testing.index', [
+                'user' => $user,
+                'questions' => $questions,
+                'activeMenu' => 'questionTest'
+            ]);
+        }
     }
 
     /**
@@ -350,13 +358,23 @@ PROMPT;
             $q->whereNotIn('students.id', $assignedStudentIds);
         })->with('modules')->get();
 
-        return view('admin.testing.environmentTesting', [
-            'user' => $user,
-            'classes' => $classes,
-            'allClasses' => $allClass,
-            'testingCombinations' => $testingCombinations,
-            'activeMenu' => 'testingEnvirontment',
-        ]);
+        if ($user->role == 'teacher') {
+            return view('teacher.testing.environmentTesting', [
+                'user' => $user,
+                'classes' => $classes,
+                'allClasses' => $allClass,
+                'testingCombinations' => $testingCombinations,
+                'activeMenu' => 'testingEnvirontment',
+            ]);
+        } elseif ($user->role == 'admin') {
+            return view('admin.testing.environmentTesting', [
+                'user' => $user,
+                'classes' => $classes,
+                'allClasses' => $allClass,
+                'testingCombinations' => $testingCombinations,
+                'activeMenu' => 'testingEnvirontment',
+            ]);
+        }
     }
 
 

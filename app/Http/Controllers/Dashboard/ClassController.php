@@ -7,6 +7,8 @@ use App\Models\Classes;
 use App\Models\Leaderboard;
 use App\Models\Module;
 use App\Models\Student;
+use App\Models\StudentModulSummary;
+use App\Models\TTesting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -285,6 +287,70 @@ class ClassController extends Controller
             ]);
         }
     }
+    public function moduleProgress(Request $request, $classId, $moduleId)
+    {
+        $user = auth()->user();
+
+        if (!$user || $user->role !== 'teacher') {
+            return abort(403, 'Unauthorized access');
+        }
+
+        $teacher = $user->teacher;
+
+        // Ambil kelas dan siswa
+        $class = Classes::with('students')->where('teacher_id', $teacher->id)->findOrFail($classId);
+        $students = $class->students;
+
+        // Ambil modul dan kontennya
+        $module = Module::with('contents')->where('teacher_id', $teacher->id)->findOrFail($moduleId);
+        $contents = $module->contents;
+        $contentIds = $contents->pluck('id');
+
+        // Ambil summary skor siswa
+        $summaries = StudentModulSummary::whereIn('content_id', $contentIds)
+            ->whereIn('student_id', $students->pluck('id'))
+            ->orderBy('quiz_submitted_at', 'desc')
+            ->get();
+
+        // Ambil data t-testing untuk semua siswa dalam kelas & modul ini
+        $tTestings = TTesting::where('class_id', $classId)
+            ->where('module_id', $moduleId)
+            ->get()
+            ->keyBy('student_id'); // agar bisa akses cepat pakai student_id
+
+        // Susun data per siswa
+        $studentData = $students->map(function ($student) use ($contentIds, $summaries, $tTestings) {
+            $scores = [];
+
+            foreach ($contentIds as $contentId) {
+                $summary = $summaries
+                    ->where('student_id', $student->id)
+                    ->where('content_id', $contentId)
+                    ->first();
+
+                $scores[] = $summary ? (float) $summary->total_score : null;
+            }
+
+            $classType = $tTestings[$student->id]->class_type ?? '-';
+
+            return [
+                'student_id' => $student->id,
+                'student_name' => $student->user->name,
+                'student_nim' => $student->NIS ?? '-',
+                'class_type' => $classType,
+                'scores' => $scores,
+            ];
+        });
+
+        return response()->json([
+            'class_name' => $class->name,
+            'module_title' => $module->title,
+            'module_content_count' => $contentIds->count(),
+            'students' => $studentData,
+        ]);
+    }
+
+
 
     public function attachModules(Request $request, Classes $class)
     {

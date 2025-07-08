@@ -1,9 +1,7 @@
 <div id="moduleList" class="card mb-6">
-    <div
-        class="card-header text-center text-sm-start d-flex justify-content-between align-items-center">
+    <div class="card-header text-center text-sm-start d-flex justify-content-between align-items-center">
         <h5>Module List</h5>
-        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-            data-bs-target="#addModuleModal">
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addModuleModal">
             + Add Module to Class
         </button>
     </div>
@@ -41,11 +39,14 @@
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#">Details</a></li>
+                                <a class="dropdown-item open-progress-modal" href="#" data-class-id="{{ $class->id }}"
+                                    data-module-id="{{ $module->id }}" data-module-title="{{ $module->title }}"
+                                    data-class-name="{{ $class->name }}">
+                                    Details
+                                </a>
                                 <li>
                                     <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
-                                        data-bs-target="#detachModuleModal"
-                                        data-module-id="{{ $module->id }}"
+                                        data-bs-target="#detachModuleModal" data-module-id="{{ $module->id }}"
                                         data-module-title="{{ $module->title }}">
                                         Remove
                                     </a>
@@ -60,3 +61,5 @@
         </table>
     </div>
 </div>
+
+@include('teacher.class.partials.progressStudentModal')
