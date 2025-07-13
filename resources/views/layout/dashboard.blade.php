@@ -199,6 +199,17 @@
                 .then(data => {
                     var form = document.getElementById(`${entity}Form`);
                     form.action = `/dashboard/admin/users/${entity}/${id}`;
+                    form.method = 'POST';
+
+                    // Tambahkan input _method=PUT jika belum ada
+                    let methodInput = form.querySelector('input[name="_method"]');
+                    if (!methodInput) {
+                        methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        form.appendChild(methodInput);
+                    }
+                    methodInput.value = 'PUT'; // Pastikan ini berisi PUT
 
                     // Populate form fields dynamically
                     document.getElementById('nameEdit').value = data.name || '';

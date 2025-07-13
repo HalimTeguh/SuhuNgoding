@@ -190,7 +190,6 @@ PROMPT;
 
       $data = $response->json('data');
 
-      dd($data);
       if (!$data || !is_array($data)) {
         return response()->json([
           'success' => false,
